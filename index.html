@@ -1463,8 +1463,11 @@ function VinylBrain() {
   const [thinking, setThinking]   = useState(false);
 
   // ── Gap Analysis recs — lifted here so they survive tab switches / re-renders ──
-  const [gapRecs, setGapRecs]     = useState(null);
-  const [gapRecsKey, setGapRecsKey] = useState(0);
+  const [gapRecs, setGapRecs]         = useState(null);
+  const [gapRecsKey, setGapRecsKey]   = useState(0);
+  const [browsedArtists, setBrowsedArtists] = useState([]);
+  const [showArtistPicker, setShowArtistPicker] = useState(false);
+  const [artistSearch, setArtistSearch] = useState("");
   const [authModal, setAuthModal] = useState(false);
   const [authInput, setAuthInput] = useState("");
   const [authError, setAuthError] = useState("");
@@ -1779,21 +1782,27 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
   function GapAnalysis() {
     const artistsInCol = [...new Set(col.map(r=>r.artist))];
     // All artists with discographies — those in collection AND any user has browsed
-    const [browsedArtists, setBrowsedArtists] = useState([]);
-    const [artistSearch, setArtistSearch] = useState("");
-    const [showArtistPicker, setShowArtistPicker] = useState(false);
-
-    // Artists shown in gap analysis = in collection + manually browsed
-    const activeArtists = [...new Set([
-      ...Object.keys(DISCOGRAPHIES).filter(a => artistsInCol.includes(a)),
-      ...browsedArtists,
-    ])];
-
-    // Artist picker suggestions
+    // All artists with discographies, filtered by search
     const allDiscoArtists = Object.keys(DISCOGRAPHIES).sort();
-    const pickerSugs = artistSearch.length > 0
-      ? allDiscoArtists.filter(a => a.toLowerCase().includes(artistSearch.toLowerCase()) && !activeArtists.includes(a)).slice(0, 12)
-      : allDiscoArtists.filter(a => !activeArtists.includes(a)).slice(0, 16);
+    const artistsInColSet = new Set(artistsInCol);
+    
+    // Active = owned artists first, then browsed, filtered by search
+    const filteredArtists = artistSearch.length > 0
+      ? allDiscoArtists.filter(a => a.toLowerCase().includes(artistSearch.toLowerCase()))
+      : allDiscoArtists;
+    
+    // Artists shown: if searching show all matches, otherwise show owned + browsed
+    const activeArtists = artistSearch.length > 0
+      ? filteredArtists
+      : [...new Set([
+          ...allDiscoArtists.filter(a => artistsInColSet.has(a)),
+          ...browsedArtists,
+        ])];
+    
+    const pickerSugs = allDiscoArtists.filter(a => 
+      !activeArtists.includes(a) &&
+      (artistSearch.length === 0 || a.toLowerCase().includes(artistSearch.toLowerCase()))
+    ).slice(0, 20);
 
     const genreMap = {}, decadeMap = {};
     col.forEach(r => {
@@ -1879,31 +1888,23 @@ Recommend 10 records I'd love that I don't already own.`}]
         </div>
 
         {/* Browse more artists */}
-        <div style={{marginBottom:20,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
-          <div style={{color:"var(--mut)",fontSize:11}}>Showing {activeArtists.length} artist{activeArtists.length!==1?"s":""} ·</div>
-          <button className="btn ghost" style={{fontSize:10,padding:"4px 12px",borderColor:"var(--acc2)",color:"var(--acc)"}}
-            onClick={()=>setShowArtistPicker(v=>!v)}>
-            {showArtistPicker ? "▲ hide" : "▼ browse more artists"}
-          </button>
+        {/* Search all artists */}
+        <div style={{marginBottom:16}}>
+          <div style={{display:"flex",gap:8,alignItems:"center",flexWrap:"wrap",marginBottom:8}}>
+            <input type="text" placeholder="Search any artist to see their discography…"
+              value={artistSearch} onChange={e=>setArtistSearch(e.target.value)}
+              style={{flex:1,minWidth:200}}/>
+            {artistSearch && <button className="btn ghost" style={{fontSize:10,padding:"4px 10px"}}
+              onClick={()=>setArtistSearch("")}>✕ clear</button>}
+          </div>
+          <div style={{color:"var(--mut)",fontSize:11}}>
+            {artistSearch 
+              ? `${activeArtists.length} artists match "${artistSearch}" — click any album to add to collection or watchlist`
+              : `Showing ${activeArtists.length} artists you own${browsedArtists.length > 0 ? " + "+browsedArtists.length+" browsed" : ""} · Search above to explore any artist`}
+          </div>
         </div>
 
-        {showArtistPicker && (
-          <div className="card" style={{marginBottom:20}}>
-            <div className="section-label" style={{marginBottom:10}}>Browse Discographies — click any artist to add to gap analysis</div>
-            <input type="text" placeholder="Filter artists…" value={artistSearch}
-              onChange={e=>setArtistSearch(e.target.value)}
-              style={{marginBottom:12,maxWidth:320}}/>
-            <div style={{display:"flex",flexWrap:"wrap",gap:6}}>
-              {pickerSugs.map(a=>(
-                <button key={a} className="btn ghost" style={{fontSize:10,padding:"3px 10px"}}
-                  onClick={()=>{setBrowsedArtists(prev=>[...prev,a]);setArtistSearch("");}}>
-                  {a}
-                </button>
-              ))}
-              {pickerSugs.length===0&&<div style={{color:"var(--mut)",fontSize:11}}>All available artists already showing.</div>}
-            </div>
-          </div>
-        )}
+
 
         {/* Discography grids */}
         {activeArtists.length === 0 ? (
