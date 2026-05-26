@@ -1293,8 +1293,7 @@ function VinylBrain() {
     requireAuth(() => { setCol(prev => [...prev, { ...form, id:Date.now(), added:new Date().toISOString() }]); setModal(null); showToast("Record added to collection"); });
   }
   function removeRecord(id) {
-    requireAuth(() => { if (!window.confirm("Remove this record?")) return; setCol(prev => prev.filter(r=>r.id!==id));
-    showToast("Record removed");
+    requireAuth(() => { if (!window.confirm("Remove this record?")) return; setCol(prev => prev.filter(r=>r.id!==id)); showToast("Record removed"); });
   }
 
   function exportCollection() {
