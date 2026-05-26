@@ -1240,19 +1240,19 @@ function VinylBrain() {
   const [authModal, setAuthModal] = useState(false);
   const [authInput, setAuthInput] = useState("");
   const [authError, setAuthError] = useState("");
-  const [authCallback, setAuthCallback] = useState(null);
+  const authCallbackRef = useRef(null);
 
   function requireAuth(cb) {
     if (isAdmin()) { cb(); return; }
-    setAuthInput(""); setAuthError(""); 
-    setAuthCallback(()=>cb);
+    setAuthInput(""); setAuthError("");
+    authCallbackRef.current = cb;
     setAuthModal(true);
   }
   function submitAuth() {
     if (authInput === ADMIN_PW) {
       sessionStorage.setItem("vb_auth","ok");
       setAuthModal(false);
-      if (authCallback) authCallback();
+      if (authCallbackRef.current) authCallbackRef.current();
     } else {
       setAuthError("Incorrect password");
       setAuthInput("");
@@ -2440,10 +2440,12 @@ Recommend 10 records I'd love that I don't already own.`}]
           <div className="modal" style={{maxWidth:340}}>
             <h3>Password Required</h3>
             <p style={{color:"var(--mut)",fontSize:12,marginBottom:16}}>This collection is password protected.</p>
-            <input type="password" placeholder="Password" value={authInput} autoFocus
+            <input type="password" placeholder="Password" value={authInput}
               style={{width:"100%",marginBottom:8}}
+              autoComplete="off"
               onChange={e=>setAuthInput(e.target.value)}
-              onKeyDown={e=>e.key==="Enter"&&submitAuth()}/>
+              onKeyDown={e=>e.key==="Enter"&&submitAuth()}
+              ref={el=>el&&el.focus()}/>
             {authError&&<div style={{color:"var(--red)",fontSize:11,marginBottom:8}}>{authError}</div>}
             <div className="modal-footer">
               <button className="btn ghost" onClick={()=>setAuthModal(false)}>Cancel</button>
@@ -2493,16 +2495,16 @@ function MobileApp() {
   const [mAuthModal, setMAuthModal] = useState(false);
   const [mAuthInput, setMAuthInput] = useState("");
   const [mAuthError, setMAuthError] = useState("");
-  const [mAuthCb, setMAuthCb] = useState(null);
+  const mAuthCbRef = useRef(null);
   function mRequireAuth(cb) {
     if (isAdmin()) { cb(); return; }
     setMAuthInput(""); setMAuthError("");
-    setMAuthCb(()=>cb); setMAuthModal(true);
+    mAuthCbRef.current = cb; setMAuthModal(true);
   }
   function mSubmitAuth() {
     if (mAuthInput === ADMIN_PW) {
       sessionStorage.setItem("vb_auth","ok");
-      setMAuthModal(false); if(mAuthCb) mAuthCb();
+      setMAuthModal(false); if(mAuthCbRef.current) mAuthCbRef.current();
     } else { setMAuthError("Incorrect password"); setMAuthInput(""); }
   }
 
@@ -2834,10 +2836,12 @@ function MobileApp() {
           <div style={{background:"#151310",borderRadius:8,padding:"24px 20px",width:"100%",maxWidth:340}}>
             <div style={{fontFamily:"'DM Serif Display',serif",color:"#d4a853",fontSize:18,marginBottom:8}}>Password Required</div>
             <div style={{color:"#6b6559",fontSize:12,marginBottom:16}}>This collection is password protected.</div>
-            <input type="password" placeholder="Password" value={mAuthInput} autoFocus
+            <input type="password" placeholder="Password" value={mAuthInput}
               style={{background:"#1c1917",border:"1px solid #2e2a25",borderRadius:3,color:"#ede8df",fontFamily:"'DM Mono',monospace",fontSize:14,padding:"12px",width:"100%",marginBottom:8,outline:"none",boxSizing:"border-box"}}
+              autoComplete="off"
               onChange={e=>setMAuthInput(e.target.value)}
-              onKeyDown={e=>e.key==="Enter"&&mSubmitAuth()}/>
+              onKeyDown={e=>e.key==="Enter"&&mSubmitAuth()}
+              ref={el=>el&&el.focus()}/>
             {mAuthError&&<div style={{color:"#b84040",fontSize:11,marginBottom:8}}>{mAuthError}</div>}
             <div style={{display:"flex",gap:8,marginTop:8}}>
               <button style={{flex:1,background:"none",border:"1px solid #2e2a25",borderRadius:3,color:"#ede8df",fontFamily:"'DM Mono',monospace",fontSize:12,padding:"10px",cursor:"pointer"}} onClick={()=>setMAuthModal(false)}>Cancel</button>
