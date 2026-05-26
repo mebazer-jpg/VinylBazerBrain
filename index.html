@@ -649,6 +649,14 @@ const ARTIST_NAMES_ONLY = [
 
 const ALL_ARTISTS = [...new Set([...Object.keys(DISCOGRAPHIES), ...ARTIST_NAMES_ONLY])].sort();
 
+// Expose all data as globals so Babel/React scope can access them
+window.DISCOGRAPHIES = DISCOGRAPHIES;
+window.ALBUM_YEARS = ALBUM_YEARS;
+window.ALBUM_META = ALBUM_META;
+window.GENRES = GENRES;
+window.ALL_ARTISTS = ALL_ARTISTS;
+window.ARTIST_NAMES_ONLY = ARTIST_NAMES_ONLY;
+
 // ─── per-album metadata (year / label / genre) ───────────────────────────────
 const ALBUM_META = {
   "Bruce Springsteen": {
@@ -1078,6 +1086,14 @@ const GENRES = [
 </script>
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useRef } = React;
+
+// Ensure data globals are accessible (fallback if plain script ran async)
+const DISCOGRAPHIES = window.DISCOGRAPHIES || {};
+const ALBUM_YEARS = window.ALBUM_YEARS || {};
+const ALBUM_META = window.ALBUM_META || {};
+const GENRES = window.GENRES || [];
+const ALL_ARTISTS = window.ALL_ARTISTS || [];
+const ARTIST_NAMES_ONLY = window.ARTIST_NAMES_ONLY || [];
 
 // Global error display for debugging
 window.onerror = function(msg, src, line, col, err) {
