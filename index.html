@@ -110,142 +110,8 @@ self.addEventListener("fetch", e => {
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 
-<script type="text/babel" data-presets="react">
-const { useState, useEffect, useRef } = React;
 
-// Global error display for debugging
-window.onerror = function(msg, src, line, col, err) {
-  var d = document.getElementById("root");
-  if (d) d.innerHTML = '<div style="color:#ff6b6b;padding:20px;font-family:monospace;font-size:13px;background:#111;min-height:100vh"><h2>JS Error</h2><p>' + msg + '</p><p>Line: ' + line + '</p><p>' + (err && err.stack ? err.stack.slice(0,500) : "") + "</p></div>";
-  return false;
-};
-
-// ─── auth ─────────────────────────────────────────────────────────────────────
-const ADMIN_PW = "Bruce Beastie";
-function isAdmin() { return sessionStorage.getItem("vb_auth") === "ok"; }
-// requireAuth is handled via React state — see authPending state in components
-
-// ─── storage keys ─────────────────────────────────────────────────────────────
-const K = {
-  COL:  "vb_collection_v1",
-  WISH: "vb_wishlist_v1",
-  UP:   "vb_upcoming_v1",
-  CHAT: "vb_chat_v1",
-};
-
-// ─── Supabase config — hardcoded for auto-connect on every device ─────────────
-const _SB_URL = "https://qavkosharcclqgotvkox.supabase.co";
-const _SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhdmtvc2hhcmNjbHFnb3R2a294Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTg4ODAsImV4cCI6MjA5NTEzNDg4MH0.8eOmduCGajuJ6C5jmT9EvZ9lbPuCMH5skls6z4E3zMo";
-function getSBUrl() { return localStorage.getItem("sb_url") || _SB_URL; }
-function getSBKey() { return localStorage.getItem("sb_key") || _SB_KEY; }
-
-// ─── Storage: Supabase when configured, localStorage always as cache/fallback ─
-const TABLE_MAP = {
-  "vb_collection_v1": "collection",
-  "vb_wishlist_v1":   "wishlist",
-  "vb_upcoming_v1":   "upcoming",
-  "vb_chat_v1":       null, // chat stays local only
-};
-
-async function sbFetch(path, opts={}) {
-  const SUPABASE_URL = getSBUrl();
-  const SUPABASE_KEY = getSBKey();
-  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
-  try {
-    const headers = {
-      "apikey": SUPABASE_KEY,
-      "Authorization": "Bearer " + SUPABASE_KEY,
-      "Content-Type": "application/json",
-      "Prefer": opts.prefer || "return=minimal",
-    };
-    // Required for DELETE to work on Supabase without RLS
-    if (opts.method === "DELETE") headers["Prefer"] = "return=minimal";
-    const res = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
-      ...opts,
-      headers,
-    });
-    // 204 No Content is success for DELETE/POST with return=minimal
-    if (res.status === 204 || res.status === 201) return true;
-    if (!res.ok) {
-      const err = await res.text();
-      console.warn("Supabase error:", res.status, err);
-      return null;
-    }
-    const text = await res.text();
-    return text ? JSON.parse(text) : true;
-  } catch(e) {
-    console.warn("Supabase fetch error:", e);
-    return null;
-  }
-}
-
-async function sget(k) {
-  const cached = localStorage.getItem(k);
-  const localVal = cached ? JSON.parse(cached) : null;
-  const table = TABLE_MAP[k];
-  if (table && getSBUrl() && getSBKey()) {
-    try {
-      const rows = await sbFetch(table + "?select=data&order=id");
-      if (Array.isArray(rows) && rows.length > 0) {
-        const cloudData = rows[0].data || [];
-        // Cloud is always authoritative when connected
-        localStorage.setItem(k, JSON.stringify(cloudData));
-        return cloudData;
-      }
-      // Cloud empty — if we have local data push it up
-      if (localVal && localVal.length > 0) {
-        sset(k, localVal);
-        return localVal;
-      }
-      return [];
-    } catch(e) {
-      console.warn("sget cloud error, using local:", e);
-      return localVal || [];
-    }
-  }
-  return localVal || [];
-}
-
-async function sset(k, v) {
-  try { localStorage.setItem(k, JSON.stringify(v)); } catch {}
-  const table = TABLE_MAP[k];
-  if (!table || !getSBUrl() || !getSBKey()) return;
-  try {
-    const arr = Array.isArray(v) ? v : [];
-    // Upsert: update if exists, insert if not
-    const row = { id: 1, data: arr };
-    const result = await sbFetch(table + "?id=eq.1", {
-      method: "PATCH",
-      prefer: "return=minimal",
-      body: JSON.stringify({ data: arr }),
-    });
-    // If PATCH found nothing (null result), do an INSERT
-    if (result === null) {
-      await sbFetch(table, {
-        method: "POST",
-        prefer: "return=minimal",
-        body: JSON.stringify(row),
-      });
-    }
-  } catch(e) {
-    console.warn("sset error:", e);
-  }
-}
-
-// ─── Config setter — call this from browser console with your Supabase details
-window.configureSupabase = function(url, key) {
-  localStorage.setItem("sb_url", url);
-  localStorage.setItem("sb_key", key);
-  location.reload();
-};
-// Supabase config loaded dynamically via getSBUrl()/getSBKey()
-
-// ─── seed data ────────────────────────────────────────────────────────────────
-const SEED_WISH = [
-  { id: 1, artist: "Jonathan Richman", album: "Surrender to Jonathan", notes: "Scarce 1996 pressing", alertUnder: 75, priority: "high", added: new Date().toISOString() },
-  { id: 2, artist: "Los Lobos", album: "The Neighborhood", notes: "Any pressing — vinyl LP only. US press is scarce.", alertUnder: null, priority: "high", added: new Date().toISOString() },
-];
-
+<script>
 // ─── Known discographies for gap analysis ─────────────────────────────────────
 const DISCOGRAPHIES = {
   "Los Lobos": ["Just Another Band from East L.A.","...And a Time to Dance","How Will the Wolf Survive?","By the Light of the Moon","La Pistola y El Corazón","The Neighborhood","Kiko","Colossal Head","This Time","Good Morning Aztlán","The Town and the City","Tin Can Trust","Disconnected in New York City","Gates of Gold","Native Sons"],
@@ -1208,6 +1074,144 @@ const GENRES = [
   "Punk","R&B","Reggae","Rock","Shoegaze","Singer-Songwriter","Ska","Soul",
   "Spoken Word","Surf Rock","Techno","World",
 ];
+
+</script>
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+// Global error display for debugging
+window.onerror = function(msg, src, line, col, err) {
+  var d = document.getElementById("root");
+  if (d) d.innerHTML = '<div style="color:#ff6b6b;padding:20px;font-family:monospace;font-size:13px;background:#111;min-height:100vh"><h2>JS Error</h2><p>' + msg + '</p><p>Line: ' + line + '</p><p>' + (err && err.stack ? err.stack.slice(0,500) : "") + "</p></div>";
+  return false;
+};
+
+// ─── auth ─────────────────────────────────────────────────────────────────────
+const ADMIN_PW = "Bruce Beastie";
+function isAdmin() { return sessionStorage.getItem("vb_auth") === "ok"; }
+// requireAuth is handled via React state — see authPending state in components
+
+// ─── storage keys ─────────────────────────────────────────────────────────────
+const K = {
+  COL:  "vb_collection_v1",
+  WISH: "vb_wishlist_v1",
+  UP:   "vb_upcoming_v1",
+  CHAT: "vb_chat_v1",
+};
+
+// ─── Supabase config — hardcoded for auto-connect on every device ─────────────
+const _SB_URL = "https://qavkosharcclqgotvkox.supabase.co";
+const _SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFhdmtvc2hhcmNjbHFnb3R2a294Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk1NTg4ODAsImV4cCI6MjA5NTEzNDg4MH0.8eOmduCGajuJ6C5jmT9EvZ9lbPuCMH5skls6z4E3zMo";
+function getSBUrl() { return localStorage.getItem("sb_url") || _SB_URL; }
+function getSBKey() { return localStorage.getItem("sb_key") || _SB_KEY; }
+
+// ─── Storage: Supabase when configured, localStorage always as cache/fallback ─
+const TABLE_MAP = {
+  "vb_collection_v1": "collection",
+  "vb_wishlist_v1":   "wishlist",
+  "vb_upcoming_v1":   "upcoming",
+  "vb_chat_v1":       null, // chat stays local only
+};
+
+async function sbFetch(path, opts={}) {
+  const SUPABASE_URL = getSBUrl();
+  const SUPABASE_KEY = getSBKey();
+  if (!SUPABASE_URL || !SUPABASE_KEY) return null;
+  try {
+    const headers = {
+      "apikey": SUPABASE_KEY,
+      "Authorization": "Bearer " + SUPABASE_KEY,
+      "Content-Type": "application/json",
+      "Prefer": opts.prefer || "return=minimal",
+    };
+    // Required for DELETE to work on Supabase without RLS
+    if (opts.method === "DELETE") headers["Prefer"] = "return=minimal";
+    const res = await fetch(SUPABASE_URL + "/rest/v1/" + path, {
+      ...opts,
+      headers,
+    });
+    // 204 No Content is success for DELETE/POST with return=minimal
+    if (res.status === 204 || res.status === 201) return true;
+    if (!res.ok) {
+      const err = await res.text();
+      console.warn("Supabase error:", res.status, err);
+      return null;
+    }
+    const text = await res.text();
+    return text ? JSON.parse(text) : true;
+  } catch(e) {
+    console.warn("Supabase fetch error:", e);
+    return null;
+  }
+}
+
+async function sget(k) {
+  const cached = localStorage.getItem(k);
+  const localVal = cached ? JSON.parse(cached) : null;
+  const table = TABLE_MAP[k];
+  if (table && getSBUrl() && getSBKey()) {
+    try {
+      const rows = await sbFetch(table + "?select=data&order=id");
+      if (Array.isArray(rows) && rows.length > 0) {
+        const cloudData = rows[0].data || [];
+        // Cloud is always authoritative when connected
+        localStorage.setItem(k, JSON.stringify(cloudData));
+        return cloudData;
+      }
+      // Cloud empty — if we have local data push it up
+      if (localVal && localVal.length > 0) {
+        sset(k, localVal);
+        return localVal;
+      }
+      return [];
+    } catch(e) {
+      console.warn("sget cloud error, using local:", e);
+      return localVal || [];
+    }
+  }
+  return localVal || [];
+}
+
+async function sset(k, v) {
+  try { localStorage.setItem(k, JSON.stringify(v)); } catch {}
+  const table = TABLE_MAP[k];
+  if (!table || !getSBUrl() || !getSBKey()) return;
+  try {
+    const arr = Array.isArray(v) ? v : [];
+    // Upsert: update if exists, insert if not
+    const row = { id: 1, data: arr };
+    const result = await sbFetch(table + "?id=eq.1", {
+      method: "PATCH",
+      prefer: "return=minimal",
+      body: JSON.stringify({ data: arr }),
+    });
+    // If PATCH found nothing (null result), do an INSERT
+    if (result === null) {
+      await sbFetch(table, {
+        method: "POST",
+        prefer: "return=minimal",
+        body: JSON.stringify(row),
+      });
+    }
+  } catch(e) {
+    console.warn("sset error:", e);
+  }
+}
+
+// ─── Config setter — call this from browser console with your Supabase details
+window.configureSupabase = function(url, key) {
+  localStorage.setItem("sb_url", url);
+  localStorage.setItem("sb_key", key);
+  location.reload();
+};
+// Supabase config loaded dynamically via getSBUrl()/getSBKey()
+
+// ─── seed data ────────────────────────────────────────────────────────────────
+const SEED_WISH = [
+  { id: 1, artist: "Jonathan Richman", album: "Surrender to Jonathan", notes: "Scarce 1996 pressing", alertUnder: 75, priority: "high", added: new Date().toISOString() },
+  { id: 2, artist: "Los Lobos", album: "The Neighborhood", notes: "Any pressing — vinyl LP only. US press is scarce.", alertUnder: null, priority: "high", added: new Date().toISOString() },
+];
+
 
 function getDecade(year) {
   const y = parseInt(year);
