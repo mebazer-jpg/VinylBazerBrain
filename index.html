@@ -1628,9 +1628,11 @@ function VinylBrain() {
     requireAuth(() => { if (!window.confirm("Remove from watchlist?")) return; setWish(prev => prev.filter(w=>w.id!==id)); showToast("Removed"); });
   }
   function addGapToWish(artist, album) {
-    if (wish.find(w=>w.artist===artist&&w.album===album)) { showToast("Already on watchlist"); return; }
-    setWish(prev => [...prev, { id:Date.now(), artist, album, notes:"", alertUnder:null, priority:"medium", added:new Date().toISOString() }]);
-    showToast(`Added "${album}" to watchlist`);
+    requireAuth(() => {
+      if (wish.find(w=>w.artist===artist&&w.album===album)) { showToast("Already on watchlist"); return; }
+      setWish(prev => [...prev, { id:Date.now(), artist, album, notes:"", alertUnder:null, priority:"medium", added:new Date().toISOString() }]);
+      showToast(`Added "${album}" to watchlist`);
+    });
   }
 
   // ── upcoming ops ──
@@ -1853,16 +1855,21 @@ Recommend 10 records I'd love that I don't already own.`}]
 
     // Quick-add — does NOT close/re-render the list
     function quickAddToCollection(artist, album) {
-      if (col.some(r=>r.artist===artist&&r.album===album)) { showToast("Already in collection"); return; }
-      const meta = ALBUM_META[artist]?.[album] || {};
-      setCol(prev => [...prev, { id:Date.now(), artist, album, year:meta.year||"", label:meta.label||"", genre:meta.genre||"", format:"LP", pressing:"", notes:"", added:new Date().toISOString() }]);
-      showToast(`✓ Added "${album}" to collection`);
+      requireAuth(() => {
+        if (col.some(r=>r.artist===artist&&r.album===album)) { showToast("Already in collection"); return; }
+        const meta = ALBUM_META[artist]?.[album] || {};
+        const yr = ALBUM_YEARS[artist]?.[album] || "";
+        setCol(prev => [...prev, { id:Date.now(), artist, album, year:meta.year||yr||"", label:meta.label||"", genre:meta.genre||"", format:"LP", pressing:"", notes:"", added:new Date().toISOString() }]);
+        showToast(`✓ Added "${album}" to collection`);
+      });
     }
 
     function quickAddToWish(artist, album) {
-      if (wish.some(w=>w.artist===artist&&w.album===album)) { showToast("Already on watchlist"); return; }
-      setWish(prev => [...prev, { id:Date.now(), artist, album, notes:"", alertUnder:null, priority:"medium", added:new Date().toISOString() }]);
-      showToast(`✓ "${album}" added to watchlist`);
+      requireAuth(() => {
+        if (wish.some(w=>w.artist===artist&&w.album===album)) { showToast("Already on watchlist"); return; }
+        setWish(prev => [...prev, { id:Date.now(), artist, album, notes:"", alertUnder:null, priority:"medium", added:new Date().toISOString() }]);
+        showToast(`✓ "${album}" added to watchlist`);
+      });
     }
 
     return (
@@ -2010,9 +2017,11 @@ Recommend 10 records I'd love that I don't already own.`}]
                               </button>
                               <button className="btn ghost" style={{fontSize:9,padding:"3px 9px",flex:1}}
                                 onClick={()=>{
-                                  const meta=ALBUM_META[r.artist]?.[r.album]||{};
-                                  setCol(prev=>[...prev,{id:Date.now(),artist:r.artist,album:r.album,year:meta.year||r.year||"",label:meta.label||"",genre:meta.genre||r.genre||"",format:"LP",pressing:"",notes:"",added:new Date().toISOString()}]);
-                                  showToast(`✓ Added "${r.album}"`);
+                                  requireAuth(()=>{
+                                    const meta=ALBUM_META[r.artist]?.[r.album]||{};
+                                    setCol(prev=>[...prev,{id:Date.now(),artist:r.artist,album:r.album,year:meta.year||r.year||"",label:meta.label||"",genre:meta.genre||r.genre||"",format:"LP",pressing:"",notes:"",added:new Date().toISOString()}]);
+                                    showToast(`✓ Added "${r.album}"`);
+                                  });
                                 }}>+ collection</button>
                             </>
                         }
@@ -2924,10 +2933,12 @@ function MobileApp() {
                             borderColor:own?"#2a4a30":"#2e2a25",color:own?"#4a8c5c":"#6b6559",cursor:own?"default":"pointer"}}
                             onClick={()=>{
                               if(own) return;
-                              const meta=ALBUM_META[artist]?.[album]||{};
-                              const yr=ALBUM_YEARS[artist]?.[album]||"";
-                              setCol(prev=>[...prev,{id:Date.now(),artist,album,year:meta.year||yr,label:meta.label||"",genre:meta.genre||"",format:"LP",pressingType:"",pressing:"",notes:"",added:new Date().toISOString()}]);
-                              showToast("Added "+album);
+                              requireAuth(()=>{
+                                const meta=ALBUM_META[artist]?.[album]||{};
+                                const yr=ALBUM_YEARS[artist]?.[album]||"";
+                                setCol(prev=>[...prev,{id:Date.now(),artist,album,year:meta.year||yr,label:meta.label||"",genre:meta.genre||"",format:"LP",pressingType:"",pressing:"",notes:"",added:new Date().toISOString()}]);
+                                showToast("Added "+album);
+                              });
                             }}>
                             {album}{own?" ✓":" +"}
                           </div>
