@@ -1962,10 +1962,10 @@ Recommend 10 records I'd love that I don't already own.`}]
     }
 
     function pickArtist(a) {
-      setF(x => ({ ...x, artist:a }));
+      setF(x => ({ ...x, artist:a, album:"", year:"", label:"", genre:"", pressing:"", pressingType:"" }));
       setArtistSugs([]);
       const albums = [...new Set([...(DISCOGRAPHIES[a]||[]), ...col.filter(r=>r.artist===a).map(r=>r.album)])];
-      setAlbumSugs(albums.slice(0, 10));
+      setAlbumSugs(albums.slice(0, 20));
       setTimeout(() => albumRef.current?.focus(), 50);
     }
 
@@ -1994,9 +1994,9 @@ Recommend 10 records I'd love that I don't already own.`}]
     }
 
     function onAlbumFocus() {
-      if (!f.album && f.artist) {
+      if (f.artist) {
         const albums = [...new Set([...(DISCOGRAPHIES[f.artist]||[]), ...col.filter(r=>r.artist===f.artist).map(r=>r.album)])];
-        if (albums.length) setAlbumSugs(albums.slice(0, 10));
+        if (albums.length) setAlbumSugs(albums.slice(0, 20));
       }
     }
 
