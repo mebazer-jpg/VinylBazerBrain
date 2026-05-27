@@ -1257,7 +1257,7 @@ var ALBUM_META = window.ALBUM_META || {};
 var GENRES = window.GENRES || [];
 var ALL_ARTISTS = window.ALL_ARTISTS || [];
 var ARTIST_NAMES_ONLY = window.ARTIST_NAMES_ONLY || [];
-console.log("VinylBrain init: DISCOGRAPHIES keys =", Object.keys(DISCOGRAPHIES).length, "ALL_ARTISTS =", ALL_ARTISTS.length);
+console.log("VinylBrain init:", Object.keys(DISCOGRAPHIES).length, "disco keys,", Object.keys(window.DISCOGRAPHIES||{}).length, "window disco keys,", ALL_ARTISTS.length, "all artists");
 
 // Global error display for debugging
 window.onerror = function(msg, src, line, col, err) {
