@@ -1285,12 +1285,7 @@ window.ARTIST_NAMES_ONLY = ARTIST_NAMES_ONLY;
 </script>
 <script type="text/babel" data-presets="react,env">
 const { useState, useEffect, useRef } = React;
-var DISCOGRAPHIES = window.DISCOGRAPHIES || {};
-var ALBUM_YEARS = window.ALBUM_YEARS || {};
-var ALBUM_META = window.ALBUM_META || {};
-var GENRES = window.GENRES || [];
-var ALL_ARTISTS = window.ALL_ARTISTS || [];
-var ARTIST_NAMES_ONLY = window.ARTIST_NAMES_ONLY || [];
+// Data globals accessed via window.X (set by plain data script above)
 
 // Data loaded from plain script above — access via window globals
 // (defined in the data script tag before this one)
