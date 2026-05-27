@@ -1248,11 +1248,15 @@ window.ARTIST_NAMES_ONLY = ARTIST_NAMES_ONLY;
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <script type="text/babel" data-presets="react">
-
 const { useState, useEffect, useRef } = React;
 
-// Data loaded from plain script above — access via window globals
-// (defined in the data script tag before this one)
+// Access data globals from the plain data script
+const DISCOGRAPHIES = window.DISCOGRAPHIES || {};
+const ALBUM_YEARS = window.ALBUM_YEARS || {};
+const ALBUM_META = window.ALBUM_META || {};
+const GENRES = window.GENRES || [];
+const ALL_ARTISTS = window.ALL_ARTISTS || [];
+const ARTIST_NAMES_ONLY = window.ARTIST_NAMES_ONLY || [];
 
 // Global error display for debugging
 window.onerror = function(msg, src, line, col, err) {
@@ -2846,12 +2850,7 @@ Recommend 10 records I'd love that I don't already own.`}]
 
 </script>
 <script type="text/babel" data-presets="react">
-// Access data globals from the data script
-const DISCOGRAPHIES = window.DISCOGRAPHIES || {};
-const ALBUM_YEARS = window.ALBUM_YEARS || {};
-const ALBUM_META = window.ALBUM_META || {};
-const ALL_ARTISTS = window.ALL_ARTISTS || [];
-const GENRES = window.GENRES || [];
+// Data globals already declared in first babel script above
 
 function MobileApp() {
   const [tab, setTab] = useState("collection");
