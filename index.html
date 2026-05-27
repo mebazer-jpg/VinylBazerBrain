@@ -3135,7 +3135,7 @@ function MobileApp() {
             <input style={S.input} placeholder="auto-filled" value={f.year} onChange={e=>setF(x=>({...x,year:e.target.value}))}/>
             <label style={S.label}>Format</label>
             <select style={S.select} value={f.format} onChange={e=>setF(x=>({...x,format:e.target.value}))}>
-              {["LP","2xLP","3xLP","EP","12" Single","7" Single","Box Set","Picture Disc","Colored Vinyl"].map(v=><option key={v}>{v}</option>)}
+              {["LP","2xLP","3xLP","EP","12-inch Single","7-inch Single","Box Set","Picture Disc","Colored Vinyl"].map(v=><option key={v}>{v}</option>)}
             </select>
             <label style={S.label}>Pressing Type</label>
             <select style={S.select} value={f.pressingType} onChange={e=>setF(x=>({...x,pressingType:e.target.value}))}>
