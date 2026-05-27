@@ -1250,13 +1250,14 @@ window.ARTIST_NAMES_ONLY = ARTIST_NAMES_ONLY;
 <script type="text/babel" data-presets="react">
 const { useState, useEffect, useRef } = React;
 
-// Access data globals from the plain data script
-const DISCOGRAPHIES = window.DISCOGRAPHIES || {};
-const ALBUM_YEARS = window.ALBUM_YEARS || {};
-const ALBUM_META = window.ALBUM_META || {};
-const GENRES = window.GENRES || [];
-const ALL_ARTISTS = window.ALL_ARTISTS || [];
-const ARTIST_NAMES_ONLY = window.ARTIST_NAMES_ONLY || [];
+// Data globals — set by the plain data script above via window.X
+// Access them as window.DISCOGRAPHIES etc, or via local vars below
+var DISCOGRAPHIES = window.DISCOGRAPHIES || {};
+var ALBUM_YEARS = window.ALBUM_YEARS || {};
+var ALBUM_META = window.ALBUM_META || {};
+var GENRES = window.GENRES || [];
+var ALL_ARTISTS = window.ALL_ARTISTS || [];
+var ARTIST_NAMES_ONLY = window.ARTIST_NAMES_ONLY || [];
 
 // Global error display for debugging
 window.onerror = function(msg, src, line, col, err) {
