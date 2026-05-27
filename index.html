@@ -1188,7 +1188,8 @@ window.ARTIST_NAMES_ONLY = ARTIST_NAMES_ONLY;
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-<script type="text/babel" data-presets="react,env">
+<script type="text/babel" data-presets="react">
+
 const { useState, useEffect, useRef } = React;
 
 // Data loaded from plain script above — access via window globals
@@ -2784,6 +2785,361 @@ Recommend 10 records I'd love that I don't already own.`}]
   );
 }
 
+</script>
+<script type="text/babel" data-presets="react">
+
+function MobileApp() {
+  const [tab, setTab] = useState("collection");
+  const [col, setCol] = useState([]);
+  const [wish, setWish] = useState([]);
+  const [up, setUp] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  const [modal, setModal] = useState(null);
+  const [toast, setToast] = useState({msg:"",on:false});
+  const [mAuthModal, setMAuthModal] = useState(false);
+  const [mAuthInput, setMAuthInput] = useState("");
+  const [mAuthError, setMAuthError] = useState("");
+  const mAuthCbRef = useRef(null);
+
+  useEffect(() => {
+    (async () => {
+      const c = await sget(K.COL); if (c) setCol(c);
+      let w = await sget(K.WISH);
+      if (!w || !w.length) { w = SEED_WISH; await sset(K.WISH, w); }
+      setWish(w);
+      const u = await sget(K.UP); if (u) setUp(u);
+      setLoaded(true);
+    })();
+  }, []);
+
+  useEffect(() => { if (loaded) sset(K.COL, col); }, [col, loaded]);
+  useEffect(() => { if (loaded) sset(K.WISH, wish); }, [wish, loaded]);
+  useEffect(() => { if (loaded) sset(K.UP, up); }, [up, loaded]);
+
+  const showToast = (msg) => { setToast({msg,on:true}); setTimeout(()=>setToast(t=>({...t,on:false})),2200); };
+
+  function mRequireAuth(cb) {
+    if (isAdmin()) { cb(); return; }
+    setMAuthInput(""); setMAuthError("");
+    mAuthCbRef.current = cb; setMAuthModal(true);
+  }
+  function mSubmitAuth() {
+    if (mAuthInput === ADMIN_PW) {
+      sessionStorage.setItem("vb_auth","ok");
+      setMAuthModal(false); if(mAuthCbRef.current) mAuthCbRef.current();
+    } else { setMAuthError("Incorrect password"); setMAuthInput(""); }
+  }
+
+  function addRecord(f) { mRequireAuth(()=>{ setCol(prev=>[...prev,{...f,id:Date.now(),added:new Date().toISOString()}]); setModal(null); showToast("Record added"); }); }
+  function removeRecord(id) { mRequireAuth(()=>{ if(!window.confirm("Remove?"))return; setCol(prev=>prev.filter(r=>r.id!==id)); showToast("Removed"); }); }
+
+  const TABS = [
+    {id:"collection",icon:"◉",label:"Collection"},
+    {id:"watchlist", icon:"◈",label:"Watchlist"},
+    {id:"gaps",      icon:"◻",label:"Gaps"},
+    {id:"upcoming",  icon:"◷",label:"Upcoming"},
+    {id:"settings",  icon:"◎",label:"Settings"},
+  ];
+
+  const S = {
+    wrap:{display:"flex",flexDirection:"column",height:"100dvh",background:"#0e0c0a",color:"#ede8df",fontFamily:"'DM Mono',monospace",fontSize:13,overflow:"hidden"},
+    header:{padding:"14px 16px 10px",borderBottom:"1px solid #2e2a25",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"},
+    title:{fontFamily:"'DM Serif Display',serif",fontSize:20,color:"#d4a853",fontStyle:"italic"},
+    content:{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"14px 16px"},
+    bottomNav:{flexShrink:0,display:"flex",flexDirection:"row",borderTop:"1px solid #2e2a25",background:"#151310",paddingBottom:"env(safe-area-inset-bottom,0px)"},
+    navBtn:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,background:"none",border:"none",borderTop:"2px solid transparent",color:"#6b6559",fontSize:9,fontFamily:"sans-serif",padding:"8px 2px 6px",cursor:"pointer"},
+    navBtnOn:{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,background:"none",border:"none",borderTop:"2px solid #c8a96e",color:"#c8a96e",fontSize:9,fontFamily:"sans-serif",padding:"8px 2px 6px",cursor:"pointer"},
+    card:{background:"#161616",border:"1px solid #2e2a25",borderRadius:5,padding:"14px 16px",marginBottom:10},
+    input:{background:"#1c1917",border:"1px solid #2e2a25",borderRadius:3,color:"#ede8df",fontFamily:"'DM Mono',monospace",fontSize:13,padding:"10px 12px",width:"100%",marginBottom:10,outline:"none",boxSizing:"border-box"},
+    btn:{background:"none",border:"1px solid #2e2a25",borderRadius:3,color:"#ede8df",fontFamily:"'DM Mono',monospace",fontSize:11,padding:"9px 16px",cursor:"pointer",marginRight:8},
+    btnPri:{background:"#8b6914",border:"1px solid #8b6914",borderRadius:3,color:"#f5e8c8",fontFamily:"'DM Mono',monospace",fontSize:11,padding:"9px 16px",cursor:"pointer"},
+    label:{color:"#6b6559",fontSize:10,letterSpacing:"1.5px",textTransform:"uppercase",display:"block",marginBottom:4},
+    select:{background:"#1c1917",border:"1px solid #2e2a25",borderRadius:3,color:"#ede8df",fontFamily:"'DM Mono',monospace",fontSize:13,padding:"10px 12px",width:"100%",marginBottom:10,outline:"none"},
+  };
+
+  const [f, setF] = useState({artist:"",album:"",year:"",genre:"",label:"",format:"LP",pressingType:"",pressing:"",notes:""});
+  const allKnownArtists = [...new Set([...ALL_ARTISTS,...col.map(r=>r.artist).filter(Boolean)])].sort();
+  const [artistSugs, setArtistSugs] = useState([]);
+  const [albumSugs, setAlbumSugs] = useState([]);
+
+  function onArtistChange(v) {
+    setF(x=>({...x,artist:v,album:"",year:"",genre:"",label:""}));
+    if (!v) { setArtistSugs([]); return; }
+    const vl=v.toLowerCase();
+    const s=allKnownArtists.filter(a=>a&&a.toLowerCase().startsWith(vl));
+    const c=allKnownArtists.filter(a=>a&&!a.toLowerCase().startsWith(vl)&&a.toLowerCase().includes(vl));
+    setArtistSugs([...s,...c].slice(0,8));
+  }
+  function pickArtist(a) {
+    setF(x=>({...x,artist:a,album:"",year:"",genre:"",label:""}));
+    setArtistSugs([]);
+    const albums=[...new Set([...(DISCOGRAPHIES[a]||[]),...col.filter(r=>r.artist===a).map(r=>r.album)])];
+    setAlbumSugs(albums.slice(0,20));
+  }
+  function onAlbumChange(v) {
+    setF(x=>({...x,album:v}));
+    if (!f.artist) return;
+    const all=[...new Set([...(DISCOGRAPHIES[f.artist]||[]),...col.filter(r=>r.artist===f.artist).map(r=>r.album)])];
+    setAlbumSugs(v ? all.filter(a=>a.toLowerCase().includes(v.toLowerCase())).slice(0,12) : all.slice(0,20));
+  }
+  function pickAlbum(a) {
+    const meta=ALBUM_META[f.artist]?.[a]||{};
+    const yr=ALBUM_YEARS[f.artist]?.[a]||"";
+    setF(x=>({...x,album:a,year:x.year||meta.year||yr,label:x.label||meta.label||"",genre:x.genre||meta.genre||""}));
+    setAlbumSugs([]);
+  }
+
+  const [sbUrl,setSbUrl]=useState(localStorage.getItem("sb_url")||"");
+  const [sbKey,setSbKey]=useState(localStorage.getItem("sb_key")||"");
+  const [sbStatus,setSbStatus]=useState("");
+
+  async function connectSb() {
+    setSbStatus("Testing…");
+    try {
+      const r=await fetch(sbUrl.trim()+"/rest/v1/collection?select=id&limit=1",{headers:{"apikey":sbKey.trim(),"Authorization":"Bearer "+sbKey.trim()}});
+      if(r.ok||r.status===406){localStorage.setItem("sb_url",sbUrl.trim());localStorage.setItem("sb_key",sbKey.trim());setSbStatus("✓ Connected! Reload to sync.");}
+      else setSbStatus("Failed — check URL and key");
+    } catch(e){setSbStatus("Error: "+e.message);}
+  }
+
+  // Mobile Gap Analysis state
+  const [gapQuery, setGapQuery] = useState("");
+  const [gapSugs, setGapSugs] = useState([]);
+  const [gapArtists, setGapArtists] = useState([]);
+
+  function onGapQuery(v) {
+    setGapQuery(v);
+    if (!v.trim()) { setGapSugs([]); return; }
+    const vl = v.toLowerCase();
+    const s = ALL_ARTISTS.filter(a=>a.toLowerCase().startsWith(vl));
+    const c = ALL_ARTISTS.filter(a=>!a.toLowerCase().startsWith(vl)&&a.toLowerCase().includes(vl));
+    setGapSugs([...s,...c].slice(0,10));
+  }
+  function addGapArtist(a) {
+    if (!gapArtists.includes(a)) setGapArtists(prev=>[a,...prev]);
+    setGapQuery(""); setGapSugs([]);
+  }
+
+  return (
+    <div style={S.wrap}>
+      <div style={S.header}>
+        <div style={S.title}>VinylBrain</div>
+        <div style={{fontSize:11,color:"#6b6559"}}>{col.length} records {getSBUrl()?"● cloud":""}</div>
+      </div>
+
+      <div style={S.content}>
+        {/* COLLECTION */}
+        {tab==="collection" && (
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{color:"#6b6559",fontSize:11}}>{col.length} records</div>
+              <button style={S.btnPri} onClick={()=>setModal("add")}>+ Add Record</button>
+            </div>
+            {col.length===0
+              ? <div style={{...S.card,color:"#6b6559",textAlign:"center"}}>No records yet.</div>
+              : col.map(r=>(
+                <div key={r.id} style={S.card}>
+                  <div style={{fontWeight:700,marginBottom:2}}>{r.artist}</div>
+                  <div style={{fontStyle:"italic",color:"#6b6559",fontSize:12,marginBottom:4}}>{r.album}</div>
+                  <div style={{display:"flex",gap:8,flexWrap:"wrap",fontSize:10,color:"#6b6559"}}>
+                    {r.year&&<span>{r.year}</span>}
+                    {r.genre&&<span style={{color:"#c8a96e"}}>{r.genre}</span>}
+                    {r.format&&r.format!=="LP"&&<span>{r.format}</span>}
+                    {r.pressingType&&<span>{r.pressingType}</span>}
+                  </div>
+                  <button style={{...S.btn,marginTop:8,fontSize:10,padding:"4px 10px",color:"#b84040",borderColor:"#3a1a1a"}} onClick={()=>removeRecord(r.id)}>Remove</button>
+                </div>
+              ))
+            }
+          </div>
+        )}
+
+        {/* WATCHLIST */}
+        {tab==="watchlist" && (
+          <div>
+            <div style={{color:"#6b6559",fontSize:11,marginBottom:14}}>{wish.length} items</div>
+            {wish.length===0
+              ? <div style={{...S.card,color:"#6b6559",textAlign:"center"}}>Nothing on watchlist yet.</div>
+              : wish.map(w=>(
+                <div key={w.id} style={S.card}>
+                  <div style={{fontWeight:700,marginBottom:2}}>{w.artist}</div>
+                  <div style={{fontStyle:"italic",color:"#6b6559",fontSize:12,marginBottom:4}}>{w.album}</div>
+                  {w.alertUnder&&<div style={{fontSize:10,color:"#e0a030"}}>🔔 Alert under ${w.alertUnder}</div>}
+                </div>
+              ))
+            }
+          </div>
+        )}
+
+        {/* GAP ANALYSIS */}
+        {tab==="gaps" && (
+          <div>
+            <div style={{position:"relative",marginBottom:16}}>
+              <input style={S.input} placeholder="Search any artist…" value={gapQuery}
+                onChange={e=>onGapQuery(e.target.value)}
+                onKeyDown={e=>{if(e.key==="Enter"&&gapSugs.length){addGapArtist(gapSugs[0]);e.preventDefault();}}}
+                onBlur={()=>setTimeout(()=>setGapSugs([]),200)}
+                autoComplete="off"/>
+              {gapSugs.length>0&&(
+                <div style={{position:"absolute",top:"100%",left:0,right:0,background:"#1c1917",border:"1px solid #2e2a25",borderRadius:3,zIndex:50,maxHeight:200,overflowY:"auto"}}>
+                  {gapSugs.map(a=><div key={a} style={{padding:"10px 12px",borderBottom:"1px solid #2e2a25",fontSize:12}} onMouseDown={()=>addGapArtist(a)}>{a}</div>)}
+                </div>
+              )}
+            </div>
+            {gapArtists.length===0&&<div style={{...S.card,color:"#6b6559",fontSize:12}}>Search an artist to see their discography.</div>}
+            {gapArtists.map(artist=>{
+              const all=DISCOGRAPHIES[artist]||[];
+              const owned=col.filter(r=>r.artist===artist).map(r=>r.album);
+              return (
+                <div key={artist} style={{...S.card,marginBottom:12}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:8}}>
+                    <div style={{fontFamily:"'DM Serif Display',serif",color:"#d4a853",fontSize:15}}>{artist}</div>
+                    <button style={{...S.btn,fontSize:10,padding:"2px 8px"}} onClick={()=>setGapArtists(p=>p.filter(a=>a!==artist))}>✕</button>
+                  </div>
+                  <div style={{fontSize:10,color:"#6b6559",marginBottom:8}}>{owned.length}/{all.length} owned</div>
+                  <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
+                    {all.map(album=>{
+                      const own=owned.some(o=>o.toLowerCase().includes(album.toLowerCase().slice(0,10)));
+                      return (
+                        <div key={album} style={{fontSize:10,padding:"4px 8px",border:"1px solid",borderRadius:3,
+                          borderColor:own?"#2a4a30":"#2e2a25",color:own?"#4a8c5c":"#ede8df",
+                          cursor:own?"default":"pointer",background:own?"#0d1a10":"transparent"}}
+                          onMouseDown={()=>{
+                            if(own)return;
+                            mRequireAuth(()=>{
+                              const meta=ALBUM_META[artist]?.[album]||{};
+                              const yr=ALBUM_YEARS[artist]?.[album]||"";
+                              setCol(prev=>[...prev,{id:Date.now(),artist,album,year:meta.year||yr,label:meta.label||"",genre:meta.genre||"",format:"LP",pressingType:"",pressing:"",notes:"",added:new Date().toISOString()}]);
+                              showToast("Added "+album);
+                            });
+                          }}>
+                          {album}{own?" ✓":""}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* UPCOMING */}
+        {tab==="upcoming" && (
+          <div>
+            <div style={{color:"#6b6559",fontSize:11,marginBottom:14}}>{up.length} upcoming</div>
+            {up.length===0&&<div style={{...S.card,color:"#6b6559",textAlign:"center"}}>No upcoming releases tracked.</div>}
+            {up.map(u=>(
+              <div key={u.id} style={S.card}>
+                <div style={{fontWeight:700}}>{u.artist}</div>
+                <div style={{fontStyle:"italic",color:"#6b6559",fontSize:12}}>{u.album}</div>
+                {u.date&&<div style={{fontSize:10,color:"#c8a96e",marginTop:4}}>{u.date}</div>}
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* SETTINGS */}
+        {tab==="settings" && (
+          <div>
+            <div style={S.card}>
+              <div style={{fontFamily:"'DM Serif Display',serif",color:"#d4a853",fontSize:16,marginBottom:10}}>Cloud Sync</div>
+              <div style={{fontSize:11,marginBottom:12,color:getSBUrl()?"#4a8c5c":"#6b6559"}}>
+                {getSBUrl()?"✓ Connected":"Not connected"}
+              </div>
+              <label style={S.label}>Supabase URL</label>
+              <input style={S.input} placeholder="https://xxxx.supabase.co" value={sbUrl} onChange={e=>setSbUrl(e.target.value)}/>
+              <label style={S.label}>Anon Key</label>
+              <input style={S.input} placeholder="eyJ..." value={sbKey} onChange={e=>setSbKey(e.target.value)}/>
+              {sbStatus&&<div style={{fontSize:11,color:sbStatus.startsWith("✓")?"#4a8c5c":"#e0a030",marginBottom:10}}>{sbStatus}</div>}
+              <button style={S.btnPri} onClick={connectSb}>Connect & Sync</button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Bottom Nav */}
+      <div style={S.bottomNav}>
+        {TABS.map(t=>(
+          <button key={t.id} style={tab===t.id?S.navBtnOn:S.navBtn} onClick={()=>setTab(t.id)}>
+            <span style={{fontSize:16,lineHeight:1}}>{t.icon}</span>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Add Record Modal */}
+      {modal==="add" && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.8)",zIndex:100,display:"flex",alignItems:"flex-end"}}>
+          <div style={{background:"#151310",borderRadius:"12px 12px 0 0",padding:"20px 16px",width:"100%",maxHeight:"85vh",overflowY:"auto"}}>
+            <div style={{fontFamily:"'DM Serif Display',serif",color:"#d4a853",fontSize:18,marginBottom:16}}>Add Record</div>
+            <label style={S.label}>Artist *</label>
+            <div style={{position:"relative"}}>
+              <input style={S.input} placeholder="Start typing…" value={f.artist} onChange={e=>onArtistChange(e.target.value)} onBlur={()=>setTimeout(()=>setArtistSugs([]),200)} autoComplete="off"/>
+              {artistSugs.length>0&&<div style={{position:"absolute",top:"100%",left:0,right:0,background:"#1c1917",border:"1px solid #2e2a25",borderRadius:3,zIndex:50,maxHeight:180,overflowY:"auto"}}>
+                {artistSugs.map(a=><div key={a} style={{padding:"10px 12px",borderBottom:"1px solid #2e2a25",fontSize:12}} onMouseDown={()=>pickArtist(a)}>{a}</div>)}
+              </div>}
+            </div>
+            <label style={S.label}>Album *</label>
+            <div style={{position:"relative"}}>
+              <input style={S.input} placeholder={f.artist?"Start typing or tap to see all…":"Pick artist first"} value={f.album}
+                disabled={!f.artist}
+                onChange={e=>onAlbumChange(e.target.value)}
+                onFocus={()=>{if(f.artist){const all=[...new Set([...(DISCOGRAPHIES[f.artist]||[]),...col.filter(r=>r.artist===f.artist).map(r=>r.album)])];setAlbumSugs(all.slice(0,20));}}}
+                onBlur={()=>setTimeout(()=>setAlbumSugs([]),200)}
+                autoComplete="off"/>
+              {albumSugs.length>0&&<div style={{position:"absolute",top:"100%",left:0,right:0,background:"#1c1917",border:"1px solid #2e2a25",borderRadius:3,zIndex:50,maxHeight:200,overflowY:"auto"}}>
+                {albumSugs.map(a=><div key={a} style={{padding:"10px 12px",borderBottom:"1px solid #2e2a25",fontSize:12}} onMouseDown={()=>pickAlbum(a)}>{a}</div>)}
+              </div>}
+            </div>
+            <label style={S.label}>Year</label>
+            <input style={S.input} placeholder="auto-filled" value={f.year} onChange={e=>setF(x=>({...x,year:e.target.value}))}/>
+            <label style={S.label}>Format</label>
+            <select style={S.select} value={f.format} onChange={e=>setF(x=>({...x,format:e.target.value}))}>
+              {["LP","2xLP","3xLP","EP","12" Single","7" Single","Box Set","Picture Disc","Colored Vinyl"].map(v=><option key={v}>{v}</option>)}
+            </select>
+            <label style={S.label}>Pressing Type</label>
+            <select style={S.select} value={f.pressingType} onChange={e=>setF(x=>({...x,pressingType:e.target.value}))}>
+              <option value="">— select —</option>
+              {["Original","Original US","Original UK","Original EU","Original JP","Reissue","Reissue US","Reissue UK","180g Reissue","Anniversary Edition","Limited Edition","Promo","Test Pressing"].map(v=><option key={v}>{v}</option>)}
+            </select>
+            <div style={{display:"flex",gap:8,marginTop:8}}>
+              <button style={S.btn} onClick={()=>{setModal(null);setArtistSugs([]);setAlbumSugs([]);}}>Cancel</button>
+              <button style={S.btnPri} onClick={()=>{if(!f.artist.trim()||!f.album.trim()){alert("Artist + Album required");return;}addRecord(f);setF({artist:"",album:"",year:"",genre:"",label:"",format:"LP",pressingType:"",pressing:"",notes:""});}}>Add Record</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Auth Modal */}
+      {mAuthModal && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
+          <div style={{background:"#151310",borderRadius:8,padding:"24px 20px",width:"100%",maxWidth:340}}>
+            <div style={{fontFamily:"'DM Serif Display',serif",color:"#d4a853",fontSize:18,marginBottom:8}}>Password Required</div>
+            <input type="password" placeholder="Password" value={mAuthInput}
+              style={{background:"#1c1917",border:"1px solid #2e2a25",borderRadius:3,color:"#ede8df",fontFamily:"'DM Mono',monospace",fontSize:14,padding:"12px",width:"100%",marginBottom:8,outline:"none",boxSizing:"border-box"}}
+              autoComplete="off"
+              onChange={e=>setMAuthInput(e.target.value)}
+              onKeyDown={e=>e.key==="Enter"&&mSubmitAuth()}
+              ref={el=>el&&el.focus()}/>
+            {mAuthError&&<div style={{color:"#b84040",fontSize:11,marginBottom:8}}>{mAuthError}</div>}
+            <div style={{display:"flex",gap:8,marginTop:8}}>
+              <button style={{flex:1,background:"none",border:"1px solid #2e2a25",borderRadius:3,color:"#ede8df",fontFamily:"'DM Mono',monospace",fontSize:12,padding:"10px",cursor:"pointer"}} onClick={()=>setMAuthModal(false)}>Cancel</button>
+              <button style={{flex:1,background:"#8b6914",border:"none",borderRadius:3,color:"#f5e8c8",fontFamily:"'DM Mono',monospace",fontSize:12,padding:"10px",cursor:"pointer"}} onClick={mSubmitAuth}>Unlock</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Toast */}
+      <div style={{position:"fixed",bottom:80,left:"50%",transform:"translateX(-50%)",background:"#1c1917",border:"1px solid #8b6914",borderRadius:4,color:"#d4a853",fontSize:11,padding:"8px 14px",opacity:toast.on?1:0,transition:"opacity .25s",pointerEvents:"none",whiteSpace:"nowrap",zIndex:200}}>
+        {toast.msg}
+      </div>
+    </div>
+  );
+}
+
+
 function AppEntry() {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
@@ -2797,6 +3153,7 @@ function AppEntry() {
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(React.createElement(AppEntry));
+
 </script>
 </body>
 </html>
