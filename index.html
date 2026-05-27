@@ -8,8 +8,6 @@
 <meta name="apple-mobile-web-app-title" content="VinylBrain">
 <meta name="theme-color" content="#0e0c0a">
 <title>VinylBrain</title>
-<link rel="manifest" href="manifest.json">
-<!-- Inline manifest for single-file use -->
 <script>
 // Register service worker for offline use
 if ("serviceWorker" in navigator) {
@@ -35,6 +33,208 @@ self.addEventListener("fetch", e => {
 }
 </script>
 <style>
+
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0e0c0a;--s1:#151310;--s2:#1c1917;--s3:#242018;
+  --bdr:#2e2a25;--bdr2:#3d3830;
+  --acc:#d4a853;--acc2:#8b6914;--acc3:#f0c97a;
+  --txt:#ede8df;--mut:#7a7068;--mut2:#5a5248;
+  --red:#b84040;--grn:#4a8c5c;--blu:#3d6b8c;
+  --pri:#c04040;--med:#c08a30;--lo:#4a7a50;
+}
+body{
+  font-family:'DM Mono',monospace;
+  background:var(--bg);color:var(--txt);font-size:13px;
+  background-image:
+    radial-gradient(ellipse at 10% 0%,rgba(212,168,83,.07) 0%,transparent 50%),
+    radial-gradient(ellipse at 90% 100%,rgba(139,105,20,.05) 0%,transparent 50%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+}
+.shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+
+/* sidebar */
+.sidebar{background:var(--s1);border-right:1px solid var(--bdr);padding:24px 0;display:flex;flex-direction:column;gap:0}
+.logo{padding:0 20px 24px;border-bottom:1px solid var(--bdr)}
+.logo-mark{font-family:'DM Serif Display',serif;font-size:22px;color:var(--acc);line-height:1}
+.logo-mark em{font-style:italic;color:var(--acc3)}
+.logo-sub{font-size:9px;letter-spacing:2.5px;color:var(--mut);text-transform:uppercase;margin-top:4px}
+.nav{padding:16px 0;flex:1}
+.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;
+  color:var(--mut);font-size:11px;letter-spacing:1px;text-transform:uppercase;
+  transition:all .2s;border-left:2px solid transparent}
+.nav-item:hover{color:var(--txt);background:var(--s2)}
+.nav-item.on{color:var(--acc);border-left-color:var(--acc);background:var(--s2)}
+.nav-icon{font-size:14px;width:18px;text-align:center}
+.nav-section{font-size:9px;letter-spacing:2px;color:var(--mut2);text-transform:uppercase;
+  padding:14px 20px 6px;margin-top:6px}
+.stats-mini{padding:16px 20px;border-top:1px solid var(--bdr);margin-top:auto}
+.sm-row{display:flex;justify-content:space-between;padding:3px 0}
+.sm-l{color:var(--mut);font-size:10px}
+.sm-v{color:var(--acc);font-size:10px;font-weight:500}
+
+/* main */
+.main{overflow-y:auto;height:100vh}
+.page{padding:28px 32px;max-width:960px}
+.page-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
+.page-title{font-family:'DM Serif Display',serif;font-size:26px;color:var(--txt)}
+.page-title em{font-style:italic;color:var(--acc)}
+
+/* buttons */
+.btn{background:none;border:1px solid var(--bdr);border-radius:3px;color:var(--txt);cursor:pointer;
+  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;padding:7px 14px;
+  text-transform:uppercase;transition:all .18s;white-space:nowrap}
+.btn:hover{border-color:var(--acc2);color:var(--acc)}
+.btn.pri{background:var(--acc2);border-color:var(--acc2);color:#f5e8c8}
+.btn.pri:hover{background:var(--acc);border-color:var(--acc);color:#1a1200}
+.btn.ghost{border-color:transparent;color:var(--mut)}
+.btn.ghost:hover{color:var(--txt);border-color:var(--bdr)}
+.btn.danger{border-color:#3a1a1a}
+.btn.danger:hover{border-color:var(--red);color:var(--red)}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap}
+
+/* inputs */
+input,select,textarea{
+  background:var(--s2);border:1px solid var(--bdr);border-radius:3px;
+  color:var(--txt);font-family:'DM Mono',monospace;font-size:12px;
+  padding:8px 11px;outline:none;transition:border-color .18s;width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--acc2)}
+textarea{resize:vertical;min-height:60px}
+select option{background:#1c1917}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{color:var(--mut);font-size:9px;letter-spacing:2px;text-transform:uppercase}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-grid .full{grid-column:1/-1}
+
+/* table */
+table{width:100%;border-collapse:collapse}
+thead tr{border-bottom:1px solid var(--bdr)}
+th{color:var(--mut);font-size:9px;letter-spacing:2px;padding:7px 10px;text-align:left;text-transform:uppercase}
+td{padding:10px 10px;border-bottom:1px solid #1e1b17;font-size:12px;vertical-align:middle}
+tbody tr:hover td{background:var(--s2)}
+.cell-artist{font-weight:500;color:var(--txt)}
+.cell-album{color:var(--mut);font-style:italic;font-size:11px;margin-top:2px}
+.cell-sub{color:var(--mut2);font-size:10px;margin-top:2px}
+
+/* badges */
+.badge{display:inline-block;border:1px solid;border-radius:2px;font-size:9px;letter-spacing:1px;padding:2px 5px;text-transform:uppercase}
+.badge-genre{border-color:var(--acc2);color:var(--acc)}
+.badge-fmt{border-color:var(--bdr2);color:var(--mut)}
+.badge-cond{border-color:var(--bdr2);color:var(--mut)}
+.badge-pri-high{border-color:#6a2020;color:var(--pri)}
+.badge-pri-med{border-color:#6a4a10;color:var(--med)}
+.badge-pri-low{border-color:#2a5030;color:var(--lo)}
+.price{color:var(--acc);font-weight:500}
+
+/* cards */
+.card{background:var(--s1);border:1px solid var(--bdr);border-radius:5px;padding:18px}
+.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.card-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+
+/* wishlist cards */
+.wish-card{background:var(--s1);border:1px solid var(--bdr);border-radius:5px;padding:16px;
+  display:flex;flex-direction:column;gap:10px}
+.wish-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.wish-card-info h4{font-family:'DM Serif Display',serif;font-size:15px;color:var(--txt);margin-bottom:2px}
+.wish-card-info p{color:var(--mut);font-size:11px}
+.wish-card-bottom{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.alert-chip{border:1px solid #4a3800;border-radius:2px;color:#e0a030;font-size:9px;
+  letter-spacing:1px;padding:2px 7px;text-transform:uppercase}
+
+/* gap analysis */
+.gap-artist-section{margin-bottom:22px}
+.gap-artist-header{display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bdr)}
+.gap-artist-name{font-family:'DM Serif Display',serif;font-size:17px;color:var(--acc)}
+.gap-progress{font-size:10px;color:var(--mut)}
+.gap-albums{display:flex;flex-wrap:wrap;gap:6px}
+.gap-album{border:1px solid;border-radius:3px;font-size:10px;padding:4px 9px;cursor:default}
+.gap-album.owned{border-color:#2a4a30;color:var(--grn);background:rgba(74,140,92,.08)}
+.gap-album.missing{border-color:var(--bdr);color:var(--mut)}
+.gap-album.missing:hover{border-color:var(--acc2);color:var(--acc)}
+.gap-album{display:flex;align-items:center;gap:0}
+.gap-album-actions{display:flex;gap:4px;margin-left:6px;opacity:0;transition:opacity .15s}
+.gap-album:hover .gap-album-actions{opacity:1}
+.gap-btn{border-radius:2px;cursor:pointer;font-size:9px;letter-spacing:.5px;padding:1px 5px;white-space:nowrap;border:1px solid}
+.gap-btn-col{border-color:#2a4a2a;color:var(--grn)}
+.gap-btn-col:hover{background:rgba(74,140,92,.15)}
+.gap-btn-wish{border-color:var(--acc2);color:var(--acc)}
+.gap-btn-wish:hover{background:rgba(212,168,83,.1)}
+
+/* bar chart */
+.bar-row{display:flex;align-items:center;gap:9px;padding:5px 0;font-size:11px}
+.bar-label{width:72px;color:var(--mut);flex-shrink:0;text-align:right}
+.bar-track{flex:1;height:5px;background:#1e1b17;border-radius:3px}
+.bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--acc2),var(--acc));transition:width .6s}
+.bar-count{color:var(--txt);width:22px;text-align:right}
+
+/* upcoming */
+.up-item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #1e1b17;align-items:flex-start}
+.up-date{background:var(--s2);border:1px solid var(--bdr);border-radius:3px;
+  text-align:center;padding:6px 10px;min-width:52px;flex-shrink:0}
+.up-mo{font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px}
+.up-day{font-size:20px;color:var(--acc);font-family:'DM Serif Display',serif;line-height:1}
+.up-info h4{font-size:13px;color:var(--txt);margin-bottom:3px}
+.up-info p{font-size:11px;color:var(--mut)}
+.owned-tag{display:inline-block;margin-top:4px;border:1px solid #2c4a2c;
+  border-radius:2px;color:var(--grn);font-size:9px;letter-spacing:1px;padding:2px 6px;text-transform:uppercase}
+
+/* chat */
+.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 56px)}
+.chat-hd{padding:20px 32px 16px;border-bottom:1px solid var(--bdr);flex-shrink:0}
+.chat-hd h2{font-family:'DM Serif Display',serif;font-size:22px;color:var(--txt)}
+.chat-hd p{color:var(--mut);font-size:11px;margin-top:3px}
+.chat-msgs{flex:1;overflow-y:auto;padding:20px 32px;display:flex;flex-direction:column;gap:14px}
+.msg{display:flex;gap:12px;max-width:760px}
+.msg.user{align-self:flex-end;flex-direction:row-reverse}
+.msg-bubble{border-radius:4px;padding:12px 15px;font-size:12px;line-height:1.65;max-width:640px}
+.msg.assistant .msg-bubble{background:var(--s2);border:1px solid var(--bdr);color:var(--txt)}
+.msg.user .msg-bubble{background:var(--acc2);border:1px solid var(--acc);color:#f5e8c8}
+.msg-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;
+  align-items:center;justify-content:center;font-size:12px;margin-top:2px}
+.msg.assistant .msg-avatar{background:var(--s3);border:1px solid var(--bdr);color:var(--acc)}
+.msg.user .msg-avatar{background:var(--acc2);border:1px solid var(--acc);color:#f5e8c8}
+.chat-input-row{padding:16px 32px;border-top:1px solid var(--bdr);display:flex;gap:10px;flex-shrink:0}
+.chat-input-row textarea{border-radius:4px;font-size:12px;min-height:42px;max-height:120px;resize:none}
+.chat-input-row textarea:focus{border-color:var(--acc2)}
+.thinking{display:flex;gap:4px;align-items:center;padding:14px 15px}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--acc2);animation:pulse 1.2s infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@keyframes pulse{0%,60%,100%{opacity:.3}30%{opacity:1}}
+.chat-suggestions{display:flex;gap:7px;flex-wrap:wrap;padding:0 32px 12px}
+.sug-chip{background:none;border:1px solid var(--bdr);border-radius:14px;color:var(--mut);
+  cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;padding:5px 12px;
+  text-align:left;transition:all .18s}
+.sug-chip:hover{border-color:var(--acc2);color:var(--acc)}
+
+/* modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;
+  display:flex;align-items:center;justify-content:center}
+.modal{background:var(--s1);border:1px solid var(--bdr);border-radius:6px;
+  padding:24px;max-width:560px;width:90%;max-height:90vh;overflow-y:auto}
+.modal h3{font-family:'DM Serif Display',serif;font-size:19px;color:var(--acc);margin-bottom:18px}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
+
+/* autocomplete */
+.ac-drop{position:absolute;top:100%;left:0;right:0;background:var(--s3);border:1px solid var(--bdr2);
+  border-radius:0 0 4px 4px;z-index:50;max-height:200px;overflow-y:auto;margin-top:-1px}
+.ac-item{padding:8px 11px;cursor:pointer;font-size:12px;color:var(--txt);border-bottom:1px solid var(--bdr);transition:background .12s}
+.ac-item:last-child{border-bottom:none}
+.ac-item:hover{background:var(--s2);color:var(--acc)}
+.press-item{display:flex;align-items:center}
+
+/* toast */
+.toast{position:fixed;bottom:20px;right:20px;background:var(--s2);border:1px solid var(--acc2);
+  border-radius:4px;color:var(--acc);font-size:10px;letter-spacing:1px;padding:9px 14px;
+  text-transform:uppercase;pointer-events:none;transition:all .25s;z-index:200}
+
+hr.divider{border:none;border-top:1px solid var(--bdr);margin:22px 0}
+.empty{color:var(--mut);font-size:12px;padding:30px 0;text-align:center}
+.section-label{font-size:9px;letter-spacing:2.5px;color:var(--mut);text-transform:uppercase;margin-bottom:12px}
+
+
   /* Mobile-specific overrides on top of app styles */
   html, body { height: 100%; overflow: hidden; }
   .shell { height: 100vh; height: 100dvh; }
@@ -81,36 +281,9 @@ self.addEventListener("fetch", e => {
 <body>
 <div id="root" style="padding-bottom:0"></div>
 <div id="vb-mobile-nav">
-  <button class="vb-mn-btn on" onclick="vbTab('collection')"><span class="vb-mn-icon">◉</span>Collection</button>
-  <button class="vb-mn-btn" onclick="vbTab('watchlist')"><span class="vb-mn-icon">◈</span>Watchlist</button>
-  <button class="vb-mn-btn" onclick="vbTab('gaps')"><span class="vb-mn-icon">◻</span>Gaps</button>
-  <button class="vb-mn-btn" onclick="vbTab('upcoming')"><span class="vb-mn-icon">◷</span>Upcoming</button>
-  <button class="vb-mn-btn" onclick="vbTab('chat')"><span class="vb-mn-icon">◌</span>Crate</button>
-  <button class="vb-mn-btn" onclick="vbTab('settings')"><span class="vb-mn-icon">◎</span>Settings</button>
+  <div id="mobile-nav-inner" id="mnav-inner"></div>
 </div>
-<script>
-(function() {
-  // Always show bottom nav — hide sidebar via CSS on mobile
-  var style = document.createElement('style');
-  style.textContent = '@media (max-width: 768px) { .sidebar { display: none !important; } #vb-mobile-nav { display: flex !important; } #root { padding-bottom: 60px !important; } }';
-  document.head.appendChild(style);
-
-  window.vbTab = function(t) {
-    if (window.__vbSetTab) window.__vbSetTab(t);
-    var btns = document.querySelectorAll('.vb-mn-btn');
-    var tabs = ['collection','watchlist','gaps','upcoming','chat','settings'];
-    btns.forEach(function(b, i) {
-      b.className = 'vb-mn-btn' + (tabs[i] === t ? ' on' : '');
-    });
-  };
-})();
-</script>
-
-<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
-
-
+<input id="vb-import-input" type="file" accept=".json" style="display:none" onChange="void(0)">
 <script>
 // ─── Known discographies ─────────────────────────────────────────────────────
 const DISCOGRAPHIES = {
@@ -995,78 +1168,31 @@ window.GENRES = GENRES;
 window.ALL_ARTISTS = ALL_ARTISTS;
 window.ARTIST_NAMES_ONLY = ARTIST_NAMES_ONLY;
 </script>
-<style>
-  /* Mobile-specific overrides on top of app styles */
-  html, body { height: 100%; overflow: hidden; }
-  .shell { height: 100vh; height: 100dvh; }
-  .main { height: 100vh; height: 100dvh; -webkit-overflow-scrolling: touch; }
-  /* Prevent tap highlight */
-  * { -webkit-tap-highlight-color: transparent; }
-  /* Safe area insets for iPhone notch */
-  .sidebar { padding-top: max(24px, env(safe-area-inset-top)); }
-  .chat-input-row { padding-bottom: max(16px, env(safe-area-inset-bottom)); }
-  /* ── Mobile layout ── */
-  @media (max-width: 700px) {
-    .logo { display: none !important; }
-    .stats-mini { display: none !important; }
-    .nav-section { display: none !important; }
-    .nav-item {
-      flex-direction: column !important;
-      align-items: center !important;
-      justify-content: center !important;
-      padding: 8px 2px 6px !important;
-      gap: 2px !important;
-      font-size: 8px !important;
-      letter-spacing: 0 !important;
-      border-left: none !important;
-      border-top: 2px solid transparent !important;
-      min-width: 0 !important;
-    }
-    .nav-item.on { border-top-color: var(--acc) !important; color: var(--acc) !important; border-left-color: transparent !important; }
-    .nav-icon { font-size: 16px !important; width: auto !important; }
-    .page { padding: 14px 12px !important; }
-    .form-grid { grid-template-columns: 1fr !important; }
-    .form-grid .full { grid-column: 1 !important; }
-    .card-grid, .card-grid-3 { grid-template-columns: 1fr !important; }
-    table { font-size: 11px !important; display: block; overflow-x: auto; }
-    th, td { padding: 7px 6px !important; }
-    .chat-wrap { height: 100% !important; }
-    .chat-input-row { padding-bottom: max(8px, env(safe-area-inset-bottom)) !important; }
-  }
+<script>
+(function() {
+  // Always show bottom nav — hide sidebar via CSS on mobile
+  var style = document.createElement('style');
+  style.textContent = '@media (max-width: 768px) { .sidebar { display: none !important; } #vb-mobile-nav { display: flex !important; } #root { padding-bottom: 60px !important; } }';
+  document.head.appendChild(style);
 
-  /* Fixed bottom nav for mobile — completely independent of main layout */
-
-
-</style>
-</head>
-
-<div id="root" style="padding-bottom:0"></div>
-<div id="vb-mobile-nav">
-  <button class="vb-mn-btn on" onclick="vbTab('collection')"><span class="vb-mn-icon">◉</span>Collection</button>
-  <button class="vb-mn-btn" onclick="vbTab('watchlist')"><span class="vb-mn-icon">◈</span>Watchlist</button>
-  <button class="vb-mn-btn" onclick="vbTab('gaps')"><span class="vb-mn-icon">◻</span>Gaps</button>
-  <button class="vb-mn-btn" onclick="vbTab('upcoming')"><span class="vb-mn-icon">◷</span>Upcoming</button>
-  <button class="vb-mn-btn" onclick="vbTab('chat')"><span class="vb-mn-icon">◌</span>Crate</button>
-  <button class="vb-mn-btn" onclick="vbTab('settings')"><span class="vb-mn-icon">◎</span>Settings</button>
-</div>
-
-
-
-
-
-
-
-
-<script type="text/babel" data-presets="react">
+  window.vbTab = function(t) {
+    if (window.__vbSetTab) window.__vbSetTab(t);
+    var btns = document.querySelectorAll('.vb-mn-btn');
+    var tabs = ['collection','watchlist','gaps','upcoming','chat','settings'];
+    btns.forEach(function(b, i) {
+      b.className = 'vb-mn-btn' + (tabs[i] === t ? ' on' : '');
+    });
+  };
+})();
+</script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<script type="text/babel" data-presets="react,env">
 const { useState, useEffect, useRef } = React;
 
-// Ensure data globals are accessible (fallback if plain script ran async)
-const DISCOGRAPHIES = window.DISCOGRAPHIES || {};
-const ALBUM_YEARS = window.ALBUM_YEARS || {};
-const ALBUM_META = window.ALBUM_META || {};
-const GENRES = window.GENRES || [];
-const ALL_ARTISTS = window.ALL_ARTISTS || [];
-const ARTIST_NAMES_ONLY = window.ARTIST_NAMES_ONLY || [];
+// Data loaded from plain script above — access via window globals
+// (defined in the data script tag before this one)
 
 // Global error display for debugging
 window.onerror = function(msg, src, line, col, err) {
@@ -1226,211 +1352,10 @@ async function askClaude(messages, systemCtx) {
     }),
   });
   const data = await res.json();
-  return data.content?.find(b => b.type === "text")?.text ?? "Sorry, I couldn't get a response.";
+  return data.content?.find(b => b.type === "text")?.text || "Sorry, I couldn't get a response.";
 }
 
 // ─── styles ───────────────────────────────────────────────────────────────────
-const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap');
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0e0c0a;--s1:#151310;--s2:#1c1917;--s3:#242018;
-  --bdr:#2e2a25;--bdr2:#3d3830;
-  --acc:#d4a853;--acc2:#8b6914;--acc3:#f0c97a;
-  --txt:#ede8df;--mut:#7a7068;--mut2:#5a5248;
-  --red:#b84040;--grn:#4a8c5c;--blu:#3d6b8c;
-  --pri:#c04040;--med:#c08a30;--lo:#4a7a50;
-}
-body{
-  font-family:'DM Mono',monospace;
-  background:var(--bg);color:var(--txt);font-size:13px;
-  background-image:
-    radial-gradient(ellipse at 10% 0%,rgba(212,168,83,.07) 0%,transparent 50%),
-    radial-gradient(ellipse at 90% 100%,rgba(139,105,20,.05) 0%,transparent 50%),
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
-}
-.shell{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
-
-/* sidebar */
-.sidebar{background:var(--s1);border-right:1px solid var(--bdr);padding:24px 0;display:flex;flex-direction:column;gap:0}
-.logo{padding:0 20px 24px;border-bottom:1px solid var(--bdr)}
-.logo-mark{font-family:'DM Serif Display',serif;font-size:22px;color:var(--acc);line-height:1}
-.logo-mark em{font-style:italic;color:var(--acc3)}
-.logo-sub{font-size:9px;letter-spacing:2.5px;color:var(--mut);text-transform:uppercase;margin-top:4px}
-.nav{padding:16px 0;flex:1}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;
-  color:var(--mut);font-size:11px;letter-spacing:1px;text-transform:uppercase;
-  transition:all .2s;border-left:2px solid transparent}
-.nav-item:hover{color:var(--txt);background:var(--s2)}
-.nav-item.on{color:var(--acc);border-left-color:var(--acc);background:var(--s2)}
-.nav-icon{font-size:14px;width:18px;text-align:center}
-.nav-section{font-size:9px;letter-spacing:2px;color:var(--mut2);text-transform:uppercase;
-  padding:14px 20px 6px;margin-top:6px}
-.stats-mini{padding:16px 20px;border-top:1px solid var(--bdr);margin-top:auto}
-.sm-row{display:flex;justify-content:space-between;padding:3px 0}
-.sm-l{color:var(--mut);font-size:10px}
-.sm-v{color:var(--acc);font-size:10px;font-weight:500}
-
-/* main */
-.main{overflow-y:auto;height:100vh}
-.page{padding:28px 32px;max-width:960px}
-.page-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}
-.page-title{font-family:'DM Serif Display',serif;font-size:26px;color:var(--txt)}
-.page-title em{font-style:italic;color:var(--acc)}
-
-/* buttons */
-.btn{background:none;border:1px solid var(--bdr);border-radius:3px;color:var(--txt);cursor:pointer;
-  font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;padding:7px 14px;
-  text-transform:uppercase;transition:all .18s;white-space:nowrap}
-.btn:hover{border-color:var(--acc2);color:var(--acc)}
-.btn.pri{background:var(--acc2);border-color:var(--acc2);color:#f5e8c8}
-.btn.pri:hover{background:var(--acc);border-color:var(--acc);color:#1a1200}
-.btn.ghost{border-color:transparent;color:var(--mut)}
-.btn.ghost:hover{color:var(--txt);border-color:var(--bdr)}
-.btn.danger{border-color:#3a1a1a}
-.btn.danger:hover{border-color:var(--red);color:var(--red)}
-.btn-row{display:flex;gap:8px;flex-wrap:wrap}
-
-/* inputs */
-input,select,textarea{
-  background:var(--s2);border:1px solid var(--bdr);border-radius:3px;
-  color:var(--txt);font-family:'DM Mono',monospace;font-size:12px;
-  padding:8px 11px;outline:none;transition:border-color .18s;width:100%}
-input:focus,select:focus,textarea:focus{border-color:var(--acc2)}
-textarea{resize:vertical;min-height:60px}
-select option{background:#1c1917}
-.field{display:flex;flex-direction:column;gap:5px}
-.field label{color:var(--mut);font-size:9px;letter-spacing:2px;text-transform:uppercase}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.form-grid .full{grid-column:1/-1}
-
-/* table */
-table{width:100%;border-collapse:collapse}
-thead tr{border-bottom:1px solid var(--bdr)}
-th{color:var(--mut);font-size:9px;letter-spacing:2px;padding:7px 10px;text-align:left;text-transform:uppercase}
-td{padding:10px 10px;border-bottom:1px solid #1e1b17;font-size:12px;vertical-align:middle}
-tbody tr:hover td{background:var(--s2)}
-.cell-artist{font-weight:500;color:var(--txt)}
-.cell-album{color:var(--mut);font-style:italic;font-size:11px;margin-top:2px}
-.cell-sub{color:var(--mut2);font-size:10px;margin-top:2px}
-
-/* badges */
-.badge{display:inline-block;border:1px solid;border-radius:2px;font-size:9px;letter-spacing:1px;padding:2px 5px;text-transform:uppercase}
-.badge-genre{border-color:var(--acc2);color:var(--acc)}
-.badge-fmt{border-color:var(--bdr2);color:var(--mut)}
-.badge-cond{border-color:var(--bdr2);color:var(--mut)}
-.badge-pri-high{border-color:#6a2020;color:var(--pri)}
-.badge-pri-med{border-color:#6a4a10;color:var(--med)}
-.badge-pri-low{border-color:#2a5030;color:var(--lo)}
-.price{color:var(--acc);font-weight:500}
-
-/* cards */
-.card{background:var(--s1);border:1px solid var(--bdr);border-radius:5px;padding:18px}
-.card-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.card-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-
-/* wishlist cards */
-.wish-card{background:var(--s1);border:1px solid var(--bdr);border-radius:5px;padding:16px;
-  display:flex;flex-direction:column;gap:10px}
-.wish-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-.wish-card-info h4{font-family:'DM Serif Display',serif;font-size:15px;color:var(--txt);margin-bottom:2px}
-.wish-card-info p{color:var(--mut);font-size:11px}
-.wish-card-bottom{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.alert-chip{border:1px solid #4a3800;border-radius:2px;color:#e0a030;font-size:9px;
-  letter-spacing:1px;padding:2px 7px;text-transform:uppercase}
-
-/* gap analysis */
-.gap-artist-section{margin-bottom:22px}
-.gap-artist-header{display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--bdr)}
-.gap-artist-name{font-family:'DM Serif Display',serif;font-size:17px;color:var(--acc)}
-.gap-progress{font-size:10px;color:var(--mut)}
-.gap-albums{display:flex;flex-wrap:wrap;gap:6px}
-.gap-album{border:1px solid;border-radius:3px;font-size:10px;padding:4px 9px;cursor:default}
-.gap-album.owned{border-color:#2a4a30;color:var(--grn);background:rgba(74,140,92,.08)}
-.gap-album.missing{border-color:var(--bdr);color:var(--mut)}
-.gap-album.missing:hover{border-color:var(--acc2);color:var(--acc)}
-.gap-album{display:flex;align-items:center;gap:0}
-.gap-album-actions{display:flex;gap:4px;margin-left:6px;opacity:0;transition:opacity .15s}
-.gap-album:hover .gap-album-actions{opacity:1}
-.gap-btn{border-radius:2px;cursor:pointer;font-size:9px;letter-spacing:.5px;padding:1px 5px;white-space:nowrap;border:1px solid}
-.gap-btn-col{border-color:#2a4a2a;color:var(--grn)}
-.gap-btn-col:hover{background:rgba(74,140,92,.15)}
-.gap-btn-wish{border-color:var(--acc2);color:var(--acc)}
-.gap-btn-wish:hover{background:rgba(212,168,83,.1)}
-
-/* bar chart */
-.bar-row{display:flex;align-items:center;gap:9px;padding:5px 0;font-size:11px}
-.bar-label{width:72px;color:var(--mut);flex-shrink:0;text-align:right}
-.bar-track{flex:1;height:5px;background:#1e1b17;border-radius:3px}
-.bar-fill{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--acc2),var(--acc));transition:width .6s}
-.bar-count{color:var(--txt);width:22px;text-align:right}
-
-/* upcoming */
-.up-item{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid #1e1b17;align-items:flex-start}
-.up-date{background:var(--s2);border:1px solid var(--bdr);border-radius:3px;
-  text-align:center;padding:6px 10px;min-width:52px;flex-shrink:0}
-.up-mo{font-size:9px;color:var(--mut);text-transform:uppercase;letter-spacing:1px}
-.up-day{font-size:20px;color:var(--acc);font-family:'DM Serif Display',serif;line-height:1}
-.up-info h4{font-size:13px;color:var(--txt);margin-bottom:3px}
-.up-info p{font-size:11px;color:var(--mut)}
-.owned-tag{display:inline-block;margin-top:4px;border:1px solid #2c4a2c;
-  border-radius:2px;color:var(--grn);font-size:9px;letter-spacing:1px;padding:2px 6px;text-transform:uppercase}
-
-/* chat */
-.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 56px)}
-.chat-hd{padding:20px 32px 16px;border-bottom:1px solid var(--bdr);flex-shrink:0}
-.chat-hd h2{font-family:'DM Serif Display',serif;font-size:22px;color:var(--txt)}
-.chat-hd p{color:var(--mut);font-size:11px;margin-top:3px}
-.chat-msgs{flex:1;overflow-y:auto;padding:20px 32px;display:flex;flex-direction:column;gap:14px}
-.msg{display:flex;gap:12px;max-width:760px}
-.msg.user{align-self:flex-end;flex-direction:row-reverse}
-.msg-bubble{border-radius:4px;padding:12px 15px;font-size:12px;line-height:1.65;max-width:640px}
-.msg.assistant .msg-bubble{background:var(--s2);border:1px solid var(--bdr);color:var(--txt)}
-.msg.user .msg-bubble{background:var(--acc2);border:1px solid var(--acc);color:#f5e8c8}
-.msg-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;
-  align-items:center;justify-content:center;font-size:12px;margin-top:2px}
-.msg.assistant .msg-avatar{background:var(--s3);border:1px solid var(--bdr);color:var(--acc)}
-.msg.user .msg-avatar{background:var(--acc2);border:1px solid var(--acc);color:#f5e8c8}
-.chat-input-row{padding:16px 32px;border-top:1px solid var(--bdr);display:flex;gap:10px;flex-shrink:0}
-.chat-input-row textarea{border-radius:4px;font-size:12px;min-height:42px;max-height:120px;resize:none}
-.chat-input-row textarea:focus{border-color:var(--acc2)}
-.thinking{display:flex;gap:4px;align-items:center;padding:14px 15px}
-.dot{width:6px;height:6px;border-radius:50%;background:var(--acc2);animation:pulse 1.2s infinite}
-.dot:nth-child(2){animation-delay:.2s}
-.dot:nth-child(3){animation-delay:.4s}
-@keyframes pulse{0%,60%,100%{opacity:.3}30%{opacity:1}}
-.chat-suggestions{display:flex;gap:7px;flex-wrap:wrap;padding:0 32px 12px}
-.sug-chip{background:none;border:1px solid var(--bdr);border-radius:14px;color:var(--mut);
-  cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;padding:5px 12px;
-  text-align:left;transition:all .18s}
-.sug-chip:hover{border-color:var(--acc2);color:var(--acc)}
-
-/* modal */
-.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;
-  display:flex;align-items:center;justify-content:center}
-.modal{background:var(--s1);border:1px solid var(--bdr);border-radius:6px;
-  padding:24px;max-width:560px;width:90%;max-height:90vh;overflow-y:auto}
-.modal h3{font-family:'DM Serif Display',serif;font-size:19px;color:var(--acc);margin-bottom:18px}
-.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:20px}
-
-/* autocomplete */
-.ac-drop{position:absolute;top:100%;left:0;right:0;background:var(--s3);border:1px solid var(--bdr2);
-  border-radius:0 0 4px 4px;z-index:50;max-height:200px;overflow-y:auto;margin-top:-1px}
-.ac-item{padding:8px 11px;cursor:pointer;font-size:12px;color:var(--txt);border-bottom:1px solid var(--bdr);transition:background .12s}
-.ac-item:last-child{border-bottom:none}
-.ac-item:hover{background:var(--s2);color:var(--acc)}
-.press-item{display:flex;align-items:center}
-
-/* toast */
-.toast{position:fixed;bottom:20px;right:20px;background:var(--s2);border:1px solid var(--acc2);
-  border-radius:4px;color:var(--acc);font-size:10px;letter-spacing:1px;padding:9px 14px;
-  text-transform:uppercase;pointer-events:none;transition:all .25s;z-index:200}
-
-hr.divider{border:none;border-top:1px solid var(--bdr);margin:22px 0}
-.empty{color:var(--mut);font-size:12px;padding:30px 0;text-align:center}
-.section-label{font-size:9px;letter-spacing:2.5px;color:var(--mut);text-transform:uppercase;margin-bottom:12px}
-`;
 
 // ─── main component ───────────────────────────────────────────────────────────
 function VinylBrain() {
@@ -2416,7 +2341,6 @@ Recommend 10 records I'd love that I don't already own.`}]
 
   return (
     <>
-      <style>{CSS}</style>
       <div className="shell" style={{display:"flex",flexDirection:isMobile?"column":"row",height:"100dvh",overflow:"hidden"}}>
 
         {/* ── sidebar ── */}
@@ -3157,9 +3081,15 @@ function AppEntry() {
   return isMobile ? React.createElement(MobileApp) : React.createElement(VinylBrain);
 }
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(React.createElement(AppEntry));
+try {
+  console.log("VinylBrain: starting render...");
+  const root = ReactDOM.createRoot(document.getElementById("root"));
+  root.render(React.createElement(AppEntry));
+  console.log("VinylBrain: render called");
+} catch(e) {
+  console.error("VinylBrain render error:", e);
+  document.getElementById("root").innerHTML = '<div style="color:red;padding:20px;font-size:14px"><h2>Render Error</h2><pre>' + e.message + '\n' + (e.stack||'') + '</pre></div>';
+}
 </script>
-<input id="vb-import-input" type="file" accept=".json" style="display:none" onChange="void(0)">
 </body>
 </html>
