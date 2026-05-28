@@ -2381,22 +2381,57 @@ onClick={()=>{}}>Details
             </div>
           )}
 
-function MobileApp() {
-  const [tab, setTab] = React.useState("collection");
-  const [col, setCol] = React.useState([]);
-  const [wish, setWish] = React.useState([]);
-  const [up, setUp] = React.useState([]);
-  const [loaded, setLoaded] = React.useState(false);
-  const [toast, setToast] = React.useState({msg:"",on:false});
-  const [mAuthModal, setMAuthModal] = React.useState(false);
-  const [mAuthInput, setMAuthInput] = React.useState("");
-  const [mAuthError, setMAuthError] = React.useState("");
-  const [gapQuery, setGapQuery] = React.useState("");
-  const [gapSugs, setGapSugs] = React.useState([]);
-  const [gapArtists, setGapArtists] = React.useState([]);
-  const mAuthCbRef = React.useRef(null);
+      </div>{/* end main content area */}
+    </div>{/* end shell */}
 
-  React.useEffect(() => {
+      {/* Auth Modal */}
+      {authModal && (
+        <div className="modal-overlay">
+          <div className="modal" style={{maxWidth:340}}>
+            <h3>Password Required</h3>
+            <p style={{color:"var(--mut)",fontSize:12,marginBottom:16}}>Enter password to make changes.</p>
+            <input type="password" placeholder="Password" value={authInput}
+              style={{width:"100%",marginBottom:8}}
+              autoComplete="off"
+              onChange={e=>setAuthInput(e.target.value)}
+              onKeyDown={e=>e.key==="Enter"&&submitAuth()}
+              ref={el=>el&&el.focus()}/>
+            {authError&&<div style={{color:"var(--red)",fontSize:11,marginBottom:8}}>{authError}</div>}
+            <div className="modal-footer">
+              <button className="btn ghost" onClick={()=>setAuthModal(false)}>Cancel</button>
+              <button className="btn pri" onClick={submitAuth}>Unlock</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modal==="add-record" && <AddRecordModal/>}
+      {modal && modal.type==="edit-record" && <EditRecordModal record={modal.record}/>}
+      {modal==="add-wish" && <AddWishModal prefill={null}/>}
+      {modal==="add-up" && <AddUpModal/>}
+      {modal && modal.type==="add-to-wish" && <AddWishModal prefill={modal}/>}
+
+      <div className="toast" style={{opacity:toast.on?1:0,transform:toast.on?"translateY(0)":"translateY(6px)"}}>{toast.msg}</div>
+    </>
+  );
+}
+
+function MobileApp() {
+  const [tab, setTab] = useState("collection");
+  const [col, setCol] = useState([]);
+  const [wish, setWish] = useState([]);
+  const [up, setUp] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  const [toast, setToast] = useState({msg:"",on:false});
+  const [mAuthModal, setMAuthModal] = useState(false);
+  const [mAuthInput, setMAuthInput] = useState("");
+  const [mAuthError, setMAuthError] = useState("");
+  const [gapQuery, setGapQuery] = useState("");
+  const [gapSugs, setGapSugs] = useState([]);
+  const [gapArtists, setGapArtists] = useState([]);
+  const mAuthCbRef = useRef(null);
+
+  useEffect(() => {
     (async () => {
       const c = await sget(K.COL); if(c) setCol(c);
       let w = await sget(K.WISH);
@@ -2407,9 +2442,9 @@ function MobileApp() {
     })();
   }, []);
 
-  React.useEffect(()=>{if(loaded)sset(K.COL,col);},[col,loaded]);
-  React.useEffect(()=>{if(loaded)sset(K.WISH,wish);},[wish,loaded]);
-  React.useEffect(()=>{if(loaded)sset(K.UP,up);},[up,loaded]);
+  useEffect(()=>{if(loaded)sset(K.COL,col);},[col,loaded]);
+  useEffect(()=>{if(loaded)sset(K.WISH,wish);},[wish,loaded]);
+  useEffect(()=>{if(loaded)sset(K.UP,up);},[up,loaded]);
 
   const showToast = msg => { setToast({msg,on:true}); setTimeout(()=>setToast(t=>({...t,on:false})),2200); };
 
@@ -2620,8 +2655,8 @@ function MobileApp() {
   );
 }
 function AppEntry() {
-  const [isMobile, setIsMobile] = React.useState(false);
-  React.useEffect(() => {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
     const check = () => setIsMobile(window.innerWidth <= 768);
     check();
     window.addEventListener("resize", check);
