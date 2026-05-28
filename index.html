@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-<head><title>Full Test</title>
+<head><title>VinylBrain</title>
 <style>
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap');
@@ -149,12 +149,7 @@ tbody tr:hover td{background:var(--s2)}
 .owned-tag{display:inline-block;margin-top:4px;border:1px solid #2c4a2c;
   border-radius:2px;color:var(--grn);font-size:9px;letter-spacing:1px;padding:2px 6px;text-transform:uppercase}
 
-/* chat */
-.chat-wrap{display:flex;flex-direction:column;height:calc(100vh - 56px)}
-.chat-hd{padding:20px 32px 16px;border-bottom:1px solid var(--bdr);flex-shrink:0}
-.chat-hd h2{font-family:'DM Serif Display',serif;font-size:22px;color:var(--txt)}
-.chat-hd p{color:var(--mut);font-size:11px;margin-top:3px}
-.chat-msgs{flex:1;overflow-y:auto;padding:20px 32px;display:flex;flex-direction:column;gap:14px}
+
 .msg{display:flex;gap:12px;max-width:760px}
 .msg.user{align-self:flex-end;flex-direction:row-reverse}
 .msg-bubble{border-radius:4px;padding:12px 15px;font-size:12px;line-height:1.65;max-width:640px}
@@ -164,15 +159,12 @@ tbody tr:hover td{background:var(--s2)}
   align-items:center;justify-content:center;font-size:12px;margin-top:2px}
 .msg.assistant .msg-avatar{background:var(--s3);border:1px solid var(--bdr);color:var(--acc)}
 .msg.user .msg-avatar{background:var(--acc2);border:1px solid var(--acc);color:#f5e8c8}
-.chat-input-row{padding:16px 32px;border-top:1px solid var(--bdr);display:flex;gap:10px;flex-shrink:0}
-.chat-input-row textarea{border-radius:4px;font-size:12px;min-height:42px;max-height:120px;resize:none}
-.chat-input-row textarea:focus{border-color:var(--acc2)}
-.thinking{display:flex;gap:4px;align-items:center;padding:14px 15px}
+
 .dot{width:6px;height:6px;border-radius:50%;background:var(--acc2);animation:pulse 1.2s infinite}
 .dot:nth-child(2){animation-delay:.2s}
 .dot:nth-child(3){animation-delay:.4s}
 @keyframes pulse{0%,60%,100%{opacity:.3}30%{opacity:1}}
-.chat-suggestions{display:flex;gap:7px;flex-wrap:wrap;padding:0 32px 12px}
+
 .sug-chip{background:none;border:1px solid var(--bdr);border-radius:14px;color:var(--mut);
   cursor:pointer;font-family:'DM Mono',monospace;font-size:10px;padding:5px 12px;
   text-align:left;transition:all .18s}
@@ -271,7 +263,7 @@ const DISCOGRAPHIES = {
   "Bradford Cox": ["Lotus Plaza: Spooky Action at a Distance", "Lotus Plaza: Spooky Action at a Distance", "Lotus Plaza: The Floodlight Collective", "Atlas Sound: Let the Blind Lead Those Who Can See but Cannot Feel", "Atlas Sound: Logos", "Atlas Sound: Parallax"],
   "Brian Eno": ["Here Come the Warm Jets", "Taking Tiger Mountain (By Strategy)", "Another Green World", "Before and After Science", "Ambient 1: Music for Airports", "Thursday Afternoon"],
   "Brockhampton": ["Saturation", "Saturation II", "Saturation III", "Team Effort Paradise", "iridescence", "Ginger", "Roadrunner: New Light New Machine", "The Family"],
-  "Bruce Springsteen": ["Greetings from Asbury Park, N.J.", "The Wild, the Innocent & the E Street Shuffle", "Born to Run", "Darkness on the Edge of Town", "The River", "Nebraska", "Born in the U.S.A.", "Tunnel of Love", "Human Touch", "Lucky Town", "The Ghost of Tom Joad", "The Rising", "Devils & Dust", "We Shall Overcome: The Seeger Sessions", "Magic", "Working on a Dream", "Wrecking Ball", "High Hopes", "Western Stars", "Letter to You", "Only the Strong Survive"],
+  "Bruce Springsteen": ["Greetings from Asbury Park, N.J.","The Wild, the Innocent & the E Street Shuffle","Born to Run","Darkness on the Edge of Town","The River","Nebraska","Born in the U.S.A.","Tunnel of Love","Human Touch","Lucky Town","The Ghost of Tom Joad","The Rising","Devils & Dust","We Shall Overcome: The Seeger Sessions","Magic","Working on a Dream","Wrecking Ball","High Hopes","Western Stars","Letter to You","Only the Strong Survive","Live/1975-85 [Box Set]","Tracks [Box Set]","The Promise [2xLP]","The Ties That Bind: The River Collection [Box Set]","The Album Collection Vol. 1 [Box Set]","The Album Collection Vol. 2 [Box Set]","Born to Run [30th Anniversary 3xLP]","Darkness on the Edge of Town [Box Set]","Born in the U.S.A. [12-inch Single]","Dancing in the Dark [12-inch Single]","Glory Days [12-inch Single]","Tunnel of Love [12-inch Single]","Human Touch / Lucky Town [2xLP]"],
   "Built to Spill": ["Ultimate Alternative Wavers", "There's Nothing Wrong with Love", "Perfect from Now On", "Keep It Like a Secret", "Ancient Melodies of the Future", "You in Reverse", "There Is No Enemy", "Untethered Moon", "When the Wind Forgets Your Name"],
   "Burial": ["Burial", "Untrue"],
   "Calexico": ["Spoke", "The Black Light", "Hot Rail", "Feast of Wire", "Garden Ruin", "Carried to Dust", "Algiers", "Edge of the Sun", "The Thread That Keeps Us", "Seasonal Shift", "El Mirador"],
@@ -368,7 +360,7 @@ const DISCOGRAPHIES = {
   "Go-Betweens": ["Send Me a Lullaby", "Before Hollywood", "Spring Hill Fair", "Liberty Belle and the Black Diamond Express", "Tallulah", "16 Lovers Lane", "The Friends of Rachel Worth", "Bright Yellow Bright Orange", "Oceans Apart"],
   "Godspeed You Black Emperor": ["F# A# Infinity", "Slow Riot for New Zero Kanada", "Lift Your Skinny Fists Like Antennas to Heaven", "Yanqui U.X.O.", "Allelujah Don't Bend Ascend", "Asunder Sweet and Other Distress", "Luciferian Towers", "G_d's Pee AT STATE'S END", "NO TITLE AS OF 13 FEBRUARY 2024"],
   "Godspeed You! Black Emperor": ["F#A#∞", "Slow Riot for New Zerø Kanada", "Lift Your Skinny Fists Like Antennas to Heaven", "Yanqui U.X.O.", "Allelujah! Don't Bend! Ascend!", "Asunder, Sweet and Other Distress", "Luciferian Towers", "G_d's Pee AT STATE'S END!", "NO TITLE AS OF 13 FEBRUARY 2024 28,340 DEAD"],
-  "Grateful Dead": ["The Grateful Dead", "Anthem of the Sun", "Aoxomoxoa", "Workingman's Dead", "American Beauty", "Grateful Dead", "Europe '72", "Wake of the Flood", "From the Mars Hotel", "Blues for Allah", "Terrapin Station", "Shakedown Street", "Go to Heaven", "In the Dark", "Built to Last"],
+  "Grateful Dead": ["The Grateful Dead","Anthem of the Sun","Aoxomoxoa","Workingman's Dead","American Beauty","Grateful Dead","Europe '72","Wake of the Flood","From the Mars Hotel","Blues for Allah","Terrapin Station","Shakedown Street","Go to Heaven","In the Dark","Built to Last","Live Dead [2xLP]","Steal Your Face [2xLP]","Reckoning [2xLP]","Dead Ahead [2xLP]","Without a Net [2xLP]","One from the Vault [2xLP]","Two from the Vault [2xLP]","Dick's Picks Vol. 1","Dick's Picks Vol. 2","Dick's Picks Vol. 3","The Grateful Dead Movie Soundtrack [Box Set]","So Many Roads [Box Set]","30 Trips Around the Sun [Box Set]","May 1977: Get Shown the Light [Box Set]","Dave's Picks Vol. 1","Touch of Grey [12-inch Single]","Hell in a Bucket [12-inch Single]"],
   "Green Day": ["Kerplunk", "Dookie", "Insomniac", "Nimrod", "Warning", "American Idiot", "21st Century Breakdown", "Revolution Radio", "Saviors"],
   "Grizzly Bear": ["Horn of Plenty", "Yellow House", "Friend", "Veckatimest", "Shields", "Painted Ruins"],
   "Grouper": ["Way Their Crept", "Dragging a Dead Deer Up a Hill", "A I A", "The Man Who Died in His Boat", "Ruins", "Grid of Points", "Shade"],
@@ -1283,7 +1275,6 @@ const K = {
   COL:  "vb_collection_v1",
   WISH: "vb_wishlist_v1",
   UP:   "vb_upcoming_v1",
-  CHAT: "vb_chat_v1",
 };
 
 // ─── Supabase config — hardcoded for auto-connect on every device ─────────────
@@ -1434,7 +1425,6 @@ function VinylBrain() {
   const [col, setCol]   = useState([]);
   const [wish, setWish] = useState([]);
   const [up, setUp]     = useState([]);
-  const [chatLog, setChatLog] = useState([]);
   const [loaded, setLoaded]   = useState(false);
 
   // Wire hidden file input to our handler (needed for mobile Safari)
@@ -1449,8 +1439,6 @@ function VinylBrain() {
   const [tab, setTab]   = useState("collection");
   const [modal, setModal] = useState(null); // "add-record" | "add-wish" | "add-up" | {type:"add-to-wish",album,artist}
   const [toast, setToast] = useState({ msg:"", on:false });
-  const [chatInput, setChatInput] = useState("");
-  const [thinking, setThinking]   = useState(false);
 
   // ── Gap Analysis recs — lifted here so they survive tab switches / re-renders ──
   const [gapRecs, setGapRecs]         = useState(null);
@@ -1504,7 +1492,6 @@ function VinylBrain() {
   const [fDecade, setFDecade] = useState("");
   const [sortBy, setSortBy] = useState("artist");
 
-  const chatEndRef = useRef(null);
 
   // ── load ──
   useEffect(() => {
@@ -1514,7 +1501,6 @@ function VinylBrain() {
       if (!w) { w = SEED_WISH; await sset(K.WISH, w); }
       setWish(w);
       const u = await sget(K.UP);   if (u) setUp(u);
-      const ch = await sget(K.CHAT); if (ch) setChatLog(ch);
       setLoaded(true);
     })();
   }, []);
@@ -1528,8 +1514,6 @@ function VinylBrain() {
   }, [col, loaded]);
   useEffect(() => { if (loaded) sset(K.WISH, wish); }, [wish, loaded]);
   useEffect(() => { if (loaded) sset(K.UP,   up);   }, [up,   loaded]);
-  useEffect(() => { if (loaded) sset(K.CHAT, chatLog.slice(-60)); }, [chatLog, loaded]);
-  useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior:"smooth" }); }, [chatLog, thinking]);
 
   // ── helpers ──
   const showToast = (msg) => {
@@ -1653,35 +1637,7 @@ You help the user:
 
 Be conversational, warm, and specific. You love records. Keep responses concise — 2-4 short paragraphs max unless they ask for a list. Reference their actual collection when relevant.`;
 
-  async function sendChat(text) {
-    const msg = text.trim();
-    if (!msg) return;
-    const userMsg = { role:"user", content:msg };
-    const newLog = [...chatLog, userMsg];
-    setChatLog(newLog);
-    setChatInput("");
-    setThinking(true);
-    try {
-      const reply = await askClaude(
-        newLog.map(m=>({ role:m.role, content:m.content })),
-        SYSTEM()
-      );
-      setChatLog(prev => [...prev, { role:"assistant", content:reply }]);
-    } catch {
-      setChatLog(prev => [...prev, { role:"assistant", content:"Something went wrong — try again." }]);
-    }
-    setThinking(false);
-  }
 
-  const SUGGESTIONS = [
-    "What are the biggest gaps in my collection?",
-    "Recommend something based on what I own",
-    "What should I hunt for next under $40?",
-    "Any Los Lobos deep cuts I'd like?",
-    "What decade am I missing most?",
-  ];
-
-  // ─── render helpers ────────────────────────────────────────────────────────
   function SettingsPanel() {
     const [url,  setUrl]  = useState(localStorage.getItem("sb_url")  || "");
     const [key,  setKey]  = useState(localStorage.getItem("sb_key")  || "");
@@ -2008,7 +1964,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
             <div className="field">
               <label>Format</label>
               <select value={f.format} onChange={e=>setF(x=>({...x,format:e.target.value}))}>
-                {["LP","2xLP","3xLP","EP","12\" Single","10\" Single","7\" Single","Box Set","Picture Disc","Colored Vinyl","Test Pressing"].map(v=><option key={v}>{v}</option>)}
+                {["LP","2xLP","3xLP","EP","12-inch Single","10\" Single","7\" Single","Box Set","Picture Disc","Colored Vinyl","Test Pressing"].map(v=><option key={v}>{v}</option>)}
               </select>
             </div>
 
@@ -2155,7 +2111,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
             <div className="field">
               <label>Format</label>
               <select value={f.format||"LP"} onChange={e=>setF(x=>({...x,format:e.target.value}))}>
-                {["LP","2xLP","3xLP","EP","12\" Single","10\" Single","7\" Single","Box Set","Picture Disc","Colored Vinyl","Test Pressing"].map(v=><option key={v}>{v}</option>)}
+                {["LP","2xLP","3xLP","EP","12-inch Single","10\" Single","7\" Single","Box Set","Picture Disc","Colored Vinyl","Test Pressing"].map(v=><option key={v}>{v}</option>)}
               </select>
             </div>
             <div className="field">
@@ -2362,8 +2318,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
                           <span className={`badge ${priClass(w.priority)}`}>{w.priority||"medium"}</span>
                           {w.alertUnder&&<span className="alert-chip">🔔 under ${w.alertUnder}</span>}
                           <button className="btn ghost" style={{marginLeft:"auto",fontSize:9,padding:"3px 9px"}}
-                            onClick={()=>sendChat(`Search for "${w.album}" by ${w.artist} and tell me about current market prices and where to find it.`) || setTab("chat")}>
-                            Ask Crate →
+onClick={()=>{}}>Details
                           </button>
                         </div>
                       </div>
@@ -2426,7 +2381,6 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
             </div>
           )}
 
-          {/* CHAT */}
 function MobileApp() {
   const [tab, setTab] = React.useState("collection");
   const [col, setCol] = React.useState([]);
