@@ -1,7 +1,6 @@
 <!DOCTYPE html>
-<html>
-<head><title>VinylBrain</title>
-<style>
+<html><head><meta charset="UTF-8">
+<title>VinylBrain</title><style>
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -195,10 +194,8 @@ hr.divider{border:none;border-top:1px solid var(--bdr);margin:22px 0}
 .empty{color:var(--mut);font-size:12px;padding:30px 0;text-align:center}
 .section-label{font-size:9px;letter-spacing:2.5px;color:var(--mut);text-transform:uppercase;margin-bottom:12px}
 
-</style>
-</head>
-<body>
-<div id="root">Loading...</div>
+</style></head><body>
+<div id="root">Testing...</div>
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
@@ -1247,13 +1244,9 @@ window.ALL_ARTISTS = ALL_ARTISTS;
 window.ARTIST_NAMES_ONLY = ARTIST_NAMES_ONLY;
 </script>
 <script type="text/babel" data-presets="react">
+
 const { useState, useEffect, useRef } = React;
-var DISCOGRAPHIES = window.DISCOGRAPHIES || {};
-var ALBUM_YEARS = window.ALBUM_YEARS || {};
-var ALBUM_META = window.ALBUM_META || {};
-var GENRES = window.GENRES || [];
-var ALL_ARTISTS = window.ALL_ARTISTS || [];
-var ARTIST_NAMES_ONLY = window.ARTIST_NAMES_ONLY || [];
+// Data globals defined in plain script above — accessible directly
 
 // Data loaded from plain script above — access via window globals
 // (defined in the data script tag before this one)
@@ -2674,6 +2667,5 @@ try {
   console.error("VinylBrain render error:", e);
   document.getElementById("root").innerHTML = '<div style="color:red;padding:20px"><h2>Error</h2><pre>' + e.message + '</pre></div>';
 }
-</script>
-</body>
-</html>
+
+</script></body></html>
