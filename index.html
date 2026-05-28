@@ -1246,7 +1246,7 @@ window.GENRES = GENRES;
 window.ALL_ARTISTS = ALL_ARTISTS;
 window.ARTIST_NAMES_ONLY = ARTIST_NAMES_ONLY;
 </script>
-<script type="text/babel" data-presets="react,env">
+<script type="text/babel" data-presets="react">
 const { useState, useEffect, useRef } = React;
 var DISCOGRAPHIES = window.DISCOGRAPHIES || {};
 var ALBUM_YEARS = window.ALBUM_YEARS || {};
@@ -1415,7 +1415,7 @@ async function askClaude(messages, systemCtx) {
     }),
   });
   const data = await res.json();
-  return data.content?.find(b => b.type === "text")?.text || "Sorry, I couldn't get a response.";
+  return (data.content && data.content.find(b => b.type === "text") && data.content.find(b => b.type === "text").text) || "Sorry, I couldn't get a response.";
 }
 
 // ─── styles ───────────────────────────────────────────────────────────────────
@@ -1842,7 +1842,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
       setArtistSugs([]);
       const albums = [...new Set([...(DISCOGRAPHIES[a]||[]), ...col.filter(r=>r.artist===a).map(r=>r.album)])];
       setAlbumSugs(albums.slice(0, 20));
-      setTimeout(() => albumRef.current?.focus(), 50);
+      setTimeout(() => albumRef.current && albumRef.current.focus(), 50);
     }
 
     // ── Album ──
@@ -1866,7 +1866,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
         genre: x.genre || meta.genre || "",
       }));
       setAlbumSugs([]);
-      setTimeout(() => genreRef.current?.focus(), 50);
+      setTimeout(() => genreRef.current && genreRef.current.focus(), 50);
     }
 
     function onAlbumFocus() {
@@ -1934,7 +1934,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
             {/* Year — auto-filled from ALBUM_META */}
             <div className="field">
               <label>Year
-                {f.year&&ALBUM_META[f.artist]?.[f.album]?.year===f.year&&<span style={{color:"var(--grn)",fontSize:9,marginLeft:6}}>✓ auto-filled</span>}
+                {f.year&&(ALBUM_META[f.artist]&&ALBUM_META[f.artist][f.album]&&ALBUM_META[f.artist][f.album].year===f.year)&&<span style={{color:"var(--grn)",fontSize:9,marginLeft:6}}>✓ auto-filled</span>}
               </label>
               <input type="text" placeholder="e.g. 1984" value={f.year} onChange={e=>setF(x=>({...x,year:e.target.value}))} />
             </div>
@@ -1942,7 +1942,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
             {/* Label — auto-filled */}
             <div className="field">
               <label>Label
-                {f.label&&ALBUM_META[f.artist]?.[f.album]?.label===f.label&&<span style={{color:"var(--grn)",fontSize:9,marginLeft:6}}>✓ auto-filled</span>}
+                {f.label&&(ALBUM_META[f.artist]&&ALBUM_META[f.artist][f.album]&&ALBUM_META[f.artist][f.album].label===f.label)&&<span style={{color:"var(--grn)",fontSize:9,marginLeft:6}}>✓ auto-filled</span>}
               </label>
               <input type="text" placeholder="e.g. Columbia" value={f.label} onChange={e=>setF(x=>({...x,label:e.target.value}))} />
             </div>
@@ -1950,7 +1950,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
             {/* Genre — autocomplete from canonical list */}
             <div className="field" style={{position:"relative"}}>
               <label>Genre
-                {f.genre&&ALBUM_META[f.artist]?.[f.album]?.genre===f.genre&&<span style={{color:"var(--grn)",fontSize:9,marginLeft:6}}>✓ auto-filled</span>}
+                {f.genre&&(ALBUM_META[f.artist]&&ALBUM_META[f.artist][f.album]&&ALBUM_META[f.artist][f.album].genre===f.genre)&&<span style={{color:"var(--grn)",fontSize:9,marginLeft:6}}>✓ auto-filled</span>}
               </label>
               <input ref={genreRef} type="text" placeholder="Start typing…" value={f.genre}
                 onChange={e=>onGenreChange(e.target.value)}
@@ -2039,7 +2039,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
       const c=allKnownArtists.filter(a=>a&&!a.toLowerCase().startsWith(vl)&&a.toLowerCase().includes(vl));
       setArtistSugs([...s,...c].slice(0,8));
     }
-    function pickArtist(a){setF(x=>({...x,artist:a}));setArtistSugs([]);setTimeout(()=>albumRef.current?.focus(),50);}
+    function pickArtist(a){setF(x=>({...x,artist:a}));setArtistSugs([]);setTimeout(()=>albumRef.current && albumRef.current.focus(),50);}
 
     function onAlbumChange(v) {
       setF(x=>({...x,album:v}));
@@ -2143,7 +2143,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
   }
 
   function AddWishModal({ prefill }) {
-    const [f, setF] = useState({ artist:prefill?.artist||"", album:prefill?.album||"", notes:"", alertUnder:"", priority:"medium" });
+    const [f, setF] = useState({ artist:(prefill && prefill.artist)||"", album:(prefill && prefill.album)||"", notes:"", alertUnder:"", priority:"medium" });
     return (
       <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&setModal(null)}>
         <div className="modal">
