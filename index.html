@@ -2365,8 +2365,8 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
     }
 
     function pickAlbum(a) {
-      const meta = ALBUM_META[f.artist]?.[a] || {};
-      const yearFallback = ALBUM_YEARS[f.artist]?.[a] || "";
+      const meta = (ALBUM_META[f.artist]&&ALBUM_META[f.artist][a])||{};
+      const yearFallback = (ALBUM_YEARS[f.artist]&&ALBUM_YEARS[f.artist][a])||"";
       setF(x => ({
         ...x, album:a,
         year:  x.year  || meta.year  || yearFallback,
@@ -2559,8 +2559,8 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
       setAlbumSugs([...new Set([...s,...c])].slice(0,8));
     }
     function pickAlbum(a){
-      const meta=ALBUM_META[f.artist]?.[a]||{};
-      const yearFallback=ALBUM_YEARS[f.artist]?.[a]||"";
+      const meta=(ALBUM_META[f.artist]&&ALBUM_META[f.artist][a])||{};
+      const yearFallback=(ALBUM_YEARS[f.artist]&&ALBUM_YEARS[f.artist][a])||"";
       setF(x=>({...x,album:a,year:x.year||meta.year||yearFallback,label:x.label||meta.label||"",genre:x.genre||meta.genre||""}));
       setAlbumSugs([]);
     }
@@ -3157,8 +3157,8 @@ function MobileApp() {
                           onMouseDown={()=>{
                             if(own)return;
                             mRequireAuth(()=>{
-                              const meta=ALBUM_META[artist]?.[album]||{};
-                              const yr=ALBUM_YEARS[artist]?.[album]||"";
+                              const meta=(ALBUM_META[artist]&&ALBUM_META[artist][album])||{};
+                              const yr=(ALBUM_YEARS[artist]&&ALBUM_YEARS[artist][album])||"";
                               setCol(prev=>[...prev,{id:Date.now(),artist,album,year:meta.year||yr,label:meta.label||"",genre:meta.genre||"",format:"LP",pressingType:"",pressing:"",notes:"",added:new Date().toISOString()}]);
                               showToast("Added: "+album);
                             });
