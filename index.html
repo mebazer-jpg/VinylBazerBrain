@@ -201,7 +201,7 @@ hr.divider{border:none;border-top:1px solid var(--bdr);margin:22px 0}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <script>
 // ─── Known discographies ─────────────────────────────────────────────────────
-const DISCOGRAPHIES = {
+var DISCOGRAPHIES = {
   "4AD Artists": ["Cocteau Twins", "Dead Can Dance", "This Mortal Coil", "Pixies", "Throwing Muses", "Belly"],
   "A Tribe Called Quest": ["People's Instinctive Travels and the Paths of Rhythm", "The Low End Theory", "Midnight Marauders", "Beats, Rhymes and Life", "The Love Movement", "We Got It from Here... Thank You 4 Your Service"],
   "AC/DC": ["High Voltage", "T.N.T.", "Dirty Deeds Done Dirt Cheap", "Let There Be Rock", "Powerage", "Highway to Hell", "Back in Black", "For Those About to Rock", "Flick of the Switch", "Fly on the Wall", "Who Made Who", "Blow Up Your Video", "The Razors Edge", "Ballbreaker", "Stiff Upper Lip", "Black Ice", "Rock or Bust", "Power Up"],
@@ -700,7 +700,7 @@ const DISCOGRAPHIES = {
 };
 
 // ─── Album years ─────────────────────────────────────────────────────────────
-const ALBUM_YEARS = {
+var ALBUM_YEARS = {
   "The Rolling Stones":{"The Rolling Stones":"1964","12 X 5":"1964","The Rolling Stones No. 2":"1965","Out of Our Heads":"1965","December's Children":"1965","Aftermath":"1966","Between the Buttons":"1967","Their Satanic Majesties Request":"1967","Beggars Banquet":"1968","Let It Bleed":"1969","Sticky Fingers":"1971","Exile on Main St.":"1972","Goats Head Soup":"1973","It's Only Rock 'n' Roll":"1974","Black and Blue":"1976","Some Girls":"1978","Emotional Rescue":"1980","Tattoo You":"1981","Undercover":"1983","Dirty Work":"1986","Steel Wheels":"1989","Voodoo Lounge":"1994","Bridges to Babylon":"1997","A Bigger Bang":"2005","Hackney Diamonds":"2023"},
   "David Bowie":{"David Bowie":"1967","Space Oddity":"1969","The Man Who Sold the World":"1970","Hunky Dory":"1971","The Rise and Fall of Ziggy Stardust":"1972","Aladdin Sane":"1973","Pin Ups":"1973","Diamond Dogs":"1974","Young Americans":"1975","Station to Station":"1976","Low":"1977","Heroes":"1977","Lodger":"1979","Scary Monsters":"1980","Let's Dance":"1983","Tonight":"1984","Never Let Me Down":"1987","Black Tie White Noise":"1993","Outside":"1995","Earthling":"1997","Hours...":"1999","Heathen":"2002","Reality":"2003","The Next Day":"2013","Blackstar":"2016"},
   "Lou Reed":{"Lou Reed":"1972","Transformer":"1972","Berlin":"1973","Rock n Roll Animal":"1974","Sally Can't Dance":"1974","Coney Island Baby":"1976","Rock and Roll Heart":"1976","Street Hassle":"1978","The Bells":"1979","Growing Up in Public":"1980","The Blue Mask":"1982","Legendary Hearts":"1983","New Sensations":"1984","Mistrial":"1986","New York":"1989","Magic and Loss":"1992","Set the Twilight Reeling":"1996","Ecstasy":"2000","The Raven":"2003","Lulu":"2011"},
@@ -886,7 +886,7 @@ const ALBUM_YEARS = {
 };
 
 // ─── Album metadata (year/label/genre) ────────────────────────────────────────
-const ALBUM_META = {
+var ALBUM_META = {
   "Bruce Springsteen": {
     "Greetings from Asbury Park, N.J.":{"year":"1973","label":"Columbia","genre":"Rock"},
     "The Wild, the Innocent & the E Street Shuffle":{"year":"1973","label":"Columbia","genre":"Rock"},
@@ -1103,7 +1103,7 @@ const ALBUM_META = {
 // full label/genre. Keyed as ALBUM_YEARS[artist][album] = "year".
 
 // ─── Genre list ───────────────────────────────────────────────────────────────
-const GENRES = [
+var GENRES = [
   "Alternative","Ambient","Americana","Art Rock","Avant-Garde","Blues","Blues Rock",
   "Bluegrass","Chamber Pop","Chicano Rock","Classical","Country","Country Rock",
   "Dance","Dream Pop","Electronic","Experimental","Folk","Folk Rock","Funk",
@@ -1115,7 +1115,7 @@ const GENRES = [
 ];
 
 // ─── Artist names for autocomplete ────────────────────────────────────────────
-const ARTIST_NAMES_ONLY = [
+var ARTIST_NAMES_ONLY = [
   // Classic Rock & Rock
   "Aerosmith","Alice Cooper","Alice in Chains","Allman Brothers Band","America","Bad Company",
   "Badfinger","Big Star","Black Flag","Black Sabbath","Blue Öyster Cult","Boston",
@@ -1264,7 +1264,7 @@ const ARTIST_NAMES_ONLY = [
   "Turnstile","Unwound","Xenia Rubinos","Yves Tumor","Zola Jesus",
 ];
 
-const ALL_ARTISTS = [...new Set([...Object.keys(DISCOGRAPHIES), ...ARTIST_NAMES_ONLY])].sort();
+var ALL_ARTISTS = [...new Set([...Object.keys(DISCOGRAPHIES), ...ARTIST_NAMES_ONLY])].sort();
 
 // Expose all data as globals
 window.DISCOGRAPHIES = DISCOGRAPHIES;
