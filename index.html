@@ -3184,12 +3184,12 @@ function MobileApp() {
   const S = {
     page: {paddingBottom: 90},
     header: {display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20,paddingTop:4},
-    heading: {fontFamily:"var(--serif)",fontSize:22,color:"var(--acc)",fontStyle:"italic"},
-    count: {fontSize:13,color:"var(--mut)"},
+    heading: {fontFamily:"var(--serif)",fontSize:26,color:"var(--acc)",fontStyle:"italic"},
+    count: {fontSize:15,color:"var(--mut)"},
     card: {background:"var(--card)",border:"1px solid var(--bdr)",borderRadius:8,padding:"16px",marginBottom:12,display:"flex",gap:14,alignItems:"center"},
-    artistName: {fontSize:16,fontWeight:700,marginBottom:3,color:"var(--fg)"},
-    albumName: {fontSize:14,color:"var(--mut)",fontStyle:"italic",marginBottom:4},
-    meta: {fontSize:12,color:"var(--acc)"},
+    artistName: {fontSize:18,fontWeight:700,marginBottom:3,color:"var(--fg)"},
+    albumName: {fontSize:15,color:"var(--mut)",fontStyle:"italic",marginBottom:4},
+    meta: {fontSize:14,color:"var(--acc)"},
     input: {background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:6,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:16,padding:"14px",width:"100%",outline:"none",boxSizing:"border-box",marginBottom:12},
     select: {background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:6,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:16,padding:"14px",width:"100%",outline:"none",marginBottom:12},
     btnPri: {background:"var(--acc2)",border:"none",borderRadius:6,color:"#0e0c0a",fontFamily:"var(--mono)",fontSize:15,padding:"14px 20px",cursor:"pointer",fontWeight:700},
@@ -3217,8 +3217,8 @@ function MobileApp() {
 
       {/* Header */}
       <div style={{padding:"16px 20px 12px",borderBottom:"1px solid var(--bdr)",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",background:"var(--bg)"}}>
-        <div style={{fontFamily:"var(--serif)",fontSize:24,color:"var(--acc)",fontStyle:"italic",letterSpacing:"-0.5px"}}>VinylBrain</div>
-        <div style={{fontSize:13,color:"var(--mut)"}}>{col.length} records{getSBUrl()?" ◉":""}</div>
+        <div style={{fontFamily:"var(--serif)",fontSize:28,color:"var(--acc)",fontStyle:"italic",letterSpacing:"-0.5px"}}>VinylBrain</div>
+        <div style={{fontSize:15,color:"var(--mut)"}}>{col.length} records{getSBUrl()?" ◉":""}</div>
       </div>
 
       {/* Content */}
@@ -3336,7 +3336,7 @@ function MobileApp() {
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:10}}>
                     <div style={{fontFamily:"var(--serif)",color:"var(--acc)",fontSize:18}}>{artist}</div>
                     <div style={{display:"flex",alignItems:"center",gap:10}}>
-                      <span style={{fontSize:13,color:"var(--mut)"}}>{owned.length}/{all.length}</span>
+                      <span style={{fontSize:15,color:"var(--mut)"}}>{owned.length}/{all.length}</span>
                       <button style={{background:"none",border:"none",color:"var(--mut)",fontSize:18,cursor:"pointer",padding:"4px 8px"}}
                         onClick={function(){setGapArtists(function(p){return p.filter(function(a){return a!==artist;});});}}>✕</button>
                     </div>
@@ -3348,7 +3348,7 @@ function MobileApp() {
                     {all.map(function(album){
                       const own=owned.some(function(o){return o.toLowerCase().includes(album.toLowerCase().slice(0,10));});
                       return(
-                        <div key={album} style={{fontSize:13,padding:"8px 12px",border:"1px solid",borderRadius:6,
+                        <div key={album} style={{fontSize:14,padding:"10px 14px",border:"1px solid",borderRadius:6,
                           borderColor:own?"var(--grn)":"var(--bdr)",color:own?"var(--grn)":"var(--fg)",
                           background:own?"rgba(74,140,92,0.1)":"transparent"}}
                           onMouseDown={function(){
@@ -3399,8 +3399,8 @@ function MobileApp() {
           const active = tab===t.id;
           return (
             <button key={t.id} onClick={function(){setTab(t.id);}}
-              style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,background:"none",border:"none",borderTop:active?"3px solid var(--acc)":"3px solid transparent",color:active?"var(--acc)":"var(--mut)",fontSize:10,fontFamily:"sans-serif",padding:"10px 4px 8px",cursor:"pointer",transition:"color .15s"}}>
-              <span style={{fontSize:20,lineHeight:1}}>{t.icon}</span>
+              style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:3,background:"none",border:"none",borderTop:active?"3px solid var(--acc)":"3px solid transparent",color:active?"var(--acc)":"var(--mut)",fontSize:12,fontFamily:"sans-serif",padding:"10px 4px 8px",cursor:"pointer",transition:"color .15s"}}>
+              <span style={{fontSize:24,lineHeight:1}}>{t.icon}</span>
               <span style={{letterSpacing:"0.5px",fontWeight:active?700:400}}>{t.label}</span>
             </button>
           );
