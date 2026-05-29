@@ -1366,7 +1366,7 @@ async function mbSearchUpcoming(artist) {
     // Get release groups for this artist
     const today = new Date().toISOString().slice(0,10);
     const twoYearsAgo = new Date(Date.now() - 1000*60*60*24*365*2).toISOString().slice(0,10);
-    const rgUrl = "https://musicbrainz.org/ws/2/release-group?artist=" + mbid + "&type=album&fmt=json&limit=25";
+    const rgUrl = "https://musicbrainz.org/ws/2/release-group?artist=" + mbid + "&type=album&primary-type=Album&fmt=json&limit=15";
     const rgRes = await fetch(rgUrl, {headers:{"User-Agent":"VinylBrain/1.0 (personal vinyl tracker)"}});
     const rgData = await rgRes.json();
     const groups = rgData["release-groups"] || [];
@@ -1612,7 +1612,6 @@ function VinylBrain() {
   const [gapRecsKey, setGapRecsKey]   = useState(0);
   const [browsedArtists, setBrowsedArtists] = useState([]);
   const [showArtistPicker, setShowArtistPicker] = useState(false);
-  const [artistSearch, setArtistSearch] = useState("");
   const [authModal, setAuthModal] = useState(false);
   const [authInput, setAuthInput] = useState("");
   const [authError, setAuthError] = useState("");
@@ -2172,43 +2171,78 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
   }
 
   function GapAnalysis() {
+    const [localSearch, setLocalSearch] = useState("");
+    const [localSugs, setLocalSugs] = useState([]);
     const allDiscoArtists = Object.keys(window.DISCOGRAPHIES||{}).sort();
     const artistsInCol = new Set(col.map(r=>r.artist).filter(Boolean));
+
+    function onSearch(v) {
+      setLocalSearch(v);
+      if (!v.trim()) { setLocalSugs([]); return; }
+      const vl = v.toLowerCase();
+      const s = allDiscoArtists.filter(a=>a.toLowerCase().startsWith(vl));
+      const c = allDiscoArtists.filter(a=>!a.toLowerCase().startsWith(vl)&&a.toLowerCase().includes(vl));
+      setLocalSugs([...s,...c].slice(0,12));
+    }
+
+    function addArtist(a) {
+      if (!browsedArtists.includes(a)) setBrowsedArtists(prev=>[a,...prev]);
+      setLocalSearch("");
+      setLocalSugs([]);
+    }
+
+    function reset() {
+      setBrowsedArtists([]);
+      setLocalSearch("");
+      setLocalSugs([]);
+    }
+
+    const displayArtists = [...new Set([
+      ...allDiscoArtists.filter(a=>artistsInCol.has(a)),
+      ...browsedArtists,
+    ])];
+
     return (
       <div>
         <div style={{position:"relative",marginBottom:16,maxWidth:520}}>
           <input type="text" placeholder="Search any artist..."
-            value={artistSearch} onChange={e=>setArtistSearch(e.target.value)}
+            value={localSearch}
+            onChange={e=>onSearch(e.target.value)}
             onKeyDown={e=>{
-              if(e.key==="Enter"){
-                const match=allDiscoArtists.find(a=>a.toLowerCase().startsWith(artistSearch.toLowerCase()));
-                if(match&&!browsedArtists.includes(match))setBrowsedArtists(prev=>[match,...prev]);
-                setArtistSearch("");
-              }
-              if(e.key==="Escape")setArtistSearch("");
-            }} autoComplete="off"/>
-          {artistSearch&&(
+              if(e.key==="Enter"&&localSugs.length){addArtist(localSugs[0]);e.preventDefault();}
+              if(e.key==="Escape"){setLocalSearch("");setLocalSugs([]);}
+            }}
+            onBlur={()=>setTimeout(()=>setLocalSugs([]),200)}
+            autoComplete="off"/>
+          {localSugs.length>0&&(
             <div className="ac-drop">
-              {allDiscoArtists.filter(a=>a.toLowerCase().includes(artistSearch.toLowerCase())).slice(0,12).map(a=>(
-                <div key={a} className="ac-item" onMouseDown={()=>{
-                  if(!browsedArtists.includes(a))setBrowsedArtists(prev=>[a,...prev]);
-                  setArtistSearch("");
-                }}>
+              {localSugs.map(a=>(
+                <div key={a} className="ac-item" onMouseDown={()=>addArtist(a)}>
                   {a}{artistsInCol.has(a)&&<span style={{color:"var(--grn)",marginLeft:8,fontSize:10}}>owned</span>}
                 </div>
               ))}
             </div>
           )}
         </div>
-        <div style={{color:"var(--mut)",fontSize:11,marginBottom:16,display:"flex",alignItems:"center",gap:10}}>
-          <span>{[...artistsInCol].filter(a=>(window.DISCOGRAPHIES||{})[a]).length} from collection{browsedArtists.filter(a=>!artistsInCol.has(a)).length>0&&` + ${browsedArtists.filter(a=>!artistsInCol.has(a)).length} browsed`}</span>
-          {browsedArtists.length>0&&<button className="btn ghost" style={{fontSize:10,padding:"2px 8px"}} onClick={()=>setBrowsedArtists([])}>✕ clear browsed</button>}
-          <button className="btn ghost" style={{fontSize:10,padding:"2px 8px"}} onClick={()=>{setBrowsedArtists([]);setArtistSearch("");}}>↺ reset</button>
+
+        <div style={{color:"var(--mut)",fontSize:11,marginBottom:16,display:"flex",alignItems:"center",gap:10,flexWrap:"wrap"}}>
+          <span>{[...artistsInCol].filter(a=>(window.DISCOGRAPHIES||{})[a]).length} from collection
+            {browsedArtists.filter(a=>!artistsInCol.has(a)).length>0&&` + ${browsedArtists.filter(a=>!artistsInCol.has(a)).length} browsed`}
+          </span>
+          {browsedArtists.length>0&&(
+            <button className="btn ghost" style={{fontSize:10,padding:"2px 8px"}} onClick={()=>setBrowsedArtists([])}>✕ clear browsed</button>
+          )}
+          <button className="btn ghost" style={{fontSize:10,padding:"2px 8px"}} onClick={reset}>↺ reset</button>
         </div>
-        {[...new Set([...allDiscoArtists.filter(a=>artistsInCol.has(a)),...browsedArtists])].map(artist=>{
+
+        {displayArtists.length===0&&(
+          <div className="card"><div style={{color:"var(--mut)",fontSize:12}}>Search an artist above to explore their discography.</div></div>
+        )}
+
+        {displayArtists.map(artist=>{
           const allAlbums=(window.DISCOGRAPHIES||{})[artist]||[];
           const owned=col.filter(r=>r.artist===artist).map(r=>r.album);
-          if(!allAlbums.length)return null;
+          if(!allAlbums.length) return null;
           const pct=Math.round(owned.length/allAlbums.length*100);
           return(
             <div key={artist} className="gap-artist-section">
@@ -2217,7 +2251,8 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
                 <div style={{display:"flex",alignItems:"center",gap:10}}>
                   <span style={{fontSize:10,color:"var(--mut)"}}>{owned.length}/{allAlbums.length} {pct}%</span>
                   {browsedArtists.includes(artist)&&!artistsInCol.has(artist)&&(
-                    <button className="btn ghost" style={{fontSize:9,padding:"2px 6px"}} onClick={()=>setBrowsedArtists(p=>p.filter(a=>a!==artist))}>x</button>
+                    <button className="btn ghost" style={{fontSize:9,padding:"2px 6px"}}
+                      onClick={()=>setBrowsedArtists(p=>p.filter(a=>a!==artist))}>✕</button>
                   )}
                 </div>
               </div>
@@ -2235,8 +2270,8 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
                         <span className="gap-album-actions">
                           <span className="gap-btn gap-btn-col" onMouseDown={e=>{e.stopPropagation();requireAuth(()=>{
                             if(col.some(r=>r.artist===artist&&r.album===album)){showToast("Already owned");return;}
-                            const meta=ALBUM_META[artist]?.[album]||{};
-                            const yr=ALBUM_YEARS[artist]?.[album]||"";
+                            const meta=(window.ALBUM_META||{})[artist]&&(window.ALBUM_META||{})[artist][album]||{};
+                            const yr=(window.ALBUM_YEARS||{})[artist]&&(window.ALBUM_YEARS||{})[artist][album]||"";
                             setCol(prev=>[...prev,{id:Date.now(),artist,album,year:meta.year||yr||"",label:meta.label||"",genre:meta.genre||"",format:"LP",pressingType:"",pressing:"",notes:"",added:new Date().toISOString()}]);
                             showToast("Added to collection");
                           });}}>+col</span>
@@ -2254,9 +2289,6 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
             </div>
           );
         })}
-        {[...artistsInCol].filter(a=>(window.DISCOGRAPHIES||{})[a]).length===0&&browsedArtists.length===0&&(
-          <div className="card"><div style={{color:"var(--mut)",fontSize:12}}>Search an artist above to explore their discography.</div></div>
-        )}
       </div>
     );
   }
@@ -2805,6 +2837,9 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
                     <tbody>
                       {filtered.map(r=>(
                         <tr key={r.id} style={{cursor:"pointer"}} onClick={()=>setModal({type:"edit-record",record:r})}>
+                          <td style={{width:56,padding:"6px 8px 6px 0"}}>
+                            <AlbumArt artist={r.artist} album={r.album} size={48}/>
+                          </td>
                           <td>
                             <div className="cell-artist">{r.artist}</div>
                             <div className="cell-album">{r.album}</div>
