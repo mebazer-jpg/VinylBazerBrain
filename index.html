@@ -1300,7 +1300,6 @@ window.ARTIST_NAMES_ONLY = ARTIST_NAMES_ONLY;
 <script type="text/babel" data-presets="react">
 
 const { useState, useEffect, useRef } = React;
-const LASTFM_KEY = "5476f5775f1202ebf9ad374d631be894";
 // Data globals defined in plain script above — accessible directly
 
 // Data loaded from plain script above — access via window globals
@@ -1502,6 +1501,128 @@ function AlbumArt({artist, album, size}) {
         </>
       ):(
         <div style={{fontSize:sz>60?24:16,opacity:0.25}}>◉</div>
+      )}
+    </div>
+  );
+}
+
+
+const LASTFM_KEY = "5476f5775f1202ebf9ad374d631be894";
+
+async function mbSearchUpcoming(artist) {
+  try {
+    var sRes = await fetch("https://musicbrainz.org/ws/2/artist/?query=" + encodeURIComponent(artist) + "&fmt=json&limit=1", {headers:{"User-Agent":"VinylBrain/1.0"}});
+    var sData = await sRes.json();
+    var artists = sData.artists || [];
+    if(!artists.length) return [];
+    var mbid = artists[0].id;
+    var today = new Date().toISOString().slice(0,10);
+    var cutoff = new Date(Date.now()-1000*60*60*24*365*2).toISOString().slice(0,7);
+    var rgRes = await fetch("https://musicbrainz.org/ws/2/release-group?artist="+mbid+"&type=album&primary-type=Album&fmt=json&limit=15", {headers:{"User-Agent":"VinylBrain/1.0"}});
+    var rgData = await rgRes.json();
+    var groups = rgData["release-groups"] || [];
+    return groups
+      .filter(function(rg){ var d=rg["first-release-date"]||""; return d.slice(0,7)>=cutoff; })
+      .map(function(rg){ var d=rg["first-release-date"]||""; return {artist:artist,album:rg.title,date:d,upcoming:d>today}; })
+      .sort(function(a,b){ return b.date.localeCompare(a.date); });
+  } catch(e) { return []; }
+}
+
+function UpcomingSearch({up, setUp, requireAuth, showToast}) {
+  var queryState = useState(""); var query = queryState[0]; var setQuery = queryState[1];
+  var sugsState = useState([]); var sugs = sugsState[0]; var setSugs = sugsState[1];
+  var resultsState = useState(null); var results = resultsState[0]; var setResults = resultsState[1];
+  var loadingState = useState(false); var loading = loadingState[0]; var setLoading = loadingState[1];
+
+  function onQChange(v) {
+    setQuery(v);
+    if(!v){setSugs([]);return;}
+    var vl=v.toLowerCase();
+    var all=window.ALL_ARTISTS||[];
+    setSugs([...all.filter(function(a){return a.toLowerCase().startsWith(vl);}),
+             ...all.filter(function(a){return !a.toLowerCase().startsWith(vl)&&a.toLowerCase().includes(vl);})].slice(0,8));
+  }
+
+  function doSearch(artist) {
+    setQuery(artist); setSugs([]); setResults(null); setLoading(true);
+    mbSearchUpcoming(artist).then(function(releases){setResults({artist:artist,releases:releases});setLoading(false);});
+  }
+
+  function saveIt(artist, album, date) {
+    requireAuth(function(){
+      if(up.some(function(u){return u.artist===artist&&u.album===album;})){showToast("Already tracking");return;}
+      setUp(function(prev){return [...prev,{id:Date.now(),artist:artist,album:album,date:date||"",notes:"",added:new Date().toISOString()}];});
+      showToast("Saved!");
+    });
+  }
+
+  function removeIt(id) {
+    requireAuth(function(){setUp(function(prev){return prev.filter(function(u){return u.id!==id;});});});
+  }
+
+  var today = new Date().toISOString().slice(0,10);
+
+  return (
+    <div>
+      {up.length > 0 && (
+        <div style={{marginBottom:20}}>
+          <div style={{color:"var(--mut)",fontSize:11,letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:8}}>Tracking</div>
+          {up.map(function(u){
+            return (
+              <div key={u.id} className="card" style={{marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontWeight:700}}>{u.artist}</div>
+                  <div style={{color:"var(--mut)",fontStyle:"italic",fontSize:13}}>{u.album}</div>
+                  {u.date&&<div style={{fontSize:12,color:u.date>=today?"var(--acc2)":"var(--mut)",marginTop:2}}>{u.date>=today?"↑ "+u.date:u.date}</div>}
+                </div>
+                <button style={{background:"none",border:"none",color:"var(--mut)",fontSize:18,cursor:"pointer",padding:"4px 8px"}} onClick={function(){removeIt(u.id);}}>✕</button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      <div style={{color:"var(--mut)",fontSize:11,letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:8}}>Search for upcoming albums</div>
+      <div style={{position:"relative",marginBottom:16}}>
+        <div style={{display:"flex",gap:8}}>
+          <input className="input" style={{flex:1}} placeholder="Artist name..." value={query}
+            onChange={function(e){onQChange(e.target.value);}}
+            onKeyDown={function(e){if(e.key==="Enter"&&query.trim())doSearch(query.trim());if(e.key==="Escape")setSugs([]);}}
+            onBlur={function(){setTimeout(function(){setSugs([]);},200);}}
+            autoComplete="off"/>
+          <button className="btn pri" onClick={function(){if(query.trim())doSearch(query.trim());}}>Search</button>
+        </div>
+        {sugs.length>0&&(
+          <div className="ac-drop">
+            {sugs.map(function(a){return <div key={a} className="ac-item" onMouseDown={function(){doSearch(a);}}>{a}</div>;})}
+          </div>
+        )}
+      </div>
+      {loading&&<div style={{color:"var(--mut)",fontSize:13,padding:"16px 0",textAlign:"center"}}>Searching MusicBrainz for {query}...</div>}
+      {results&&!loading&&(
+        <div>
+          <div style={{color:"var(--mut)",fontSize:12,marginBottom:10}}>Recent & upcoming for <strong style={{color:"var(--fg)"}}>{results.artist}</strong></div>
+          {results.releases.length===0&&<div style={{color:"var(--mut)",fontSize:13,textAlign:"center",padding:16}}>No recent or upcoming albums found.</div>}
+          {results.releases.map(function(r,i){
+            var tracking=up.some(function(u){return u.artist===r.artist&&u.album===r.album;});
+            var owned=col&&col.some(function(c){return c.artist===r.artist&&c.album===r.album;});
+            return (
+              <div key={i} className="card" style={{marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center",opacity:owned?0.5:1}}>
+                <div style={{flex:1}}>
+                  <div style={{fontWeight:600,fontSize:14}}>{r.album}</div>
+                  <div style={{display:"flex",gap:6,marginTop:3,flexWrap:"wrap"}}>
+                    {r.date&&<span style={{fontSize:12,color:r.upcoming?"var(--acc2)":"var(--mut)"}}>{r.upcoming?"↑ "+r.date:r.date}</span>}
+                    {r.upcoming&&<span style={{fontSize:10,background:"rgba(200,169,110,0.15)",color:"var(--acc)",padding:"1px 5px",borderRadius:3}}>upcoming</span>}
+                    {owned&&<span style={{fontSize:11,color:"var(--grn)"}}>owned</span>}
+                    {tracking&&<span style={{fontSize:11,color:"var(--acc)"}}>tracking ✓</span>}
+                  </div>
+                </div>
+                {!owned&&!tracking&&(
+                  <button className="btn ghost" style={{fontSize:12,padding:"6px 10px",flexShrink:0,marginLeft:8}} onClick={function(){saveIt(r.artist,r.album,r.date);}}>+ Track</button>
+                )}
+              </div>
+            );
+          })}
+        </div>
       )}
     </div>
   );
@@ -2428,40 +2549,13 @@ onClick={()=>{}}>Details
           )}
 
           {/* UPCOMING */}
-          {tab==="upcoming" && (
+                    {tab==="upcoming" && (
             <div className="page">
-              <div className="page-hd">
-                <div className="page-title"><em>Upcoming</em> Releases</div>
-                <button className="btn pri" onClick={()=>setModal("add-up")}>+ Track Release</button><a href="https://www.last.fm/music/+releases" target="_blank" rel="noopener noreferrer" className="btn ghost" style={{marginLeft:8,fontSize:11}}>Last.fm</a>
-              </div>
-              {up.length===0
-                ? <div>
-                    <div className="empty">No upcoming releases tracked yet.</div>
-                    <div style={{color:"var(--mut)",fontSize:11,textAlign:"center"}}>Add upcoming releases manually, or check Last.fm for new releases.</div>
-                  </div>
-                : up.map(u=>{
-                    const pts = (u.date||"").split(" ");
-                    const artistOwned = col.some(r=>r.artist.toLowerCase()===u.artist.toLowerCase());
-                    return (
-                      <div className="up-item" key={u.id}>
-                        <div className="up-date">
-                          <div className="up-mo">{pts[0]||""}</div>
-                          <div className="up-day">{pts[1]||"—"}</div>
-                        </div>
-                        <div className="up-info">
-                          <h4>{u.artist}{u.album?` — ${u.album}`:""}</h4>
-                          <p>{u.label?u.label+" · ":""}{u.why||""}</p>
-                          {artistOwned&&<span className="owned-tag">In collection</span>}
-                        </div>
-                        <button className="btn danger" style={{fontSize:9,padding:"3px 7px",marginLeft:"auto",flexShrink:0}} onClick={()=>removeUp(u.id)}>✕</button>
-                      </div>
-                    );
-                  })
-              }
+              <div className="page-hd"><div className="page-title"><em>Upcoming</em></div></div>
+              <UpcomingSearch up={up} setUp={setUp} requireAuth={requireAuth} showToast={showToast}/>
             </div>
           )}
 
-          {/* SETTINGS */}
           {tab==="settings" && (
             <div className="page">
               <div className="page-hd"><div className="page-title"><em>Settings</em><a href="https://www.last.fm/music/+releases/new" target="_blank" rel="noopener noreferrer" className="btn ghost" style={{fontSize:11,marginLeft:8}}>Last.fm New Releases</a></div></div>
@@ -2756,7 +2850,7 @@ function MobileApp() {
           </div>
         )}
 
-        {tab==="upcoming" && (
+                 {tab==="upcoming" && (
           <div>
             <div style={{fontFamily:"var(--serif)",fontSize:24,color:"var(--acc)",fontStyle:"italic",marginBottom:16}}>Upcoming</div>
             <UpcomingSearch up={up} setUp={setUp} requireAuth={mRequireAuth} showToast={showToast}/>
