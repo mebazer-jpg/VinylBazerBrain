@@ -276,6 +276,31 @@ hr.divider{border:none;border-top:1px solid var(--bdr);margin:22px 0}
 .empty{color:var(--mut);font-size:12px;padding:30px 0;text-align:center}
 .section-label{font-size:9px;letter-spacing:2.5px;color:var(--mut);text-transform:uppercase;margin-bottom:12px}
 
+
+/* ── Mobile sizing fixes ─────────────────────────────── */
+@media (max-width: 900px) {
+  body { font-size: 15px; }
+  .card { padding: 14px 16px; }
+  .cell-artist { font-size: 15px; }
+  .cell-album  { font-size: 13px; }
+  td { padding: 12px 10px; font-size: 14px; }
+  th { font-size: 11px; }
+  input, select, textarea {
+    font-size: 16px !important; /* prevents iOS zoom */
+    padding: 12px !important;
+  }
+  .btn { font-size: 13px; padding: 10px 16px; }
+  .btn.pri { font-size: 13px; padding: 10px 16px; }
+  .ac-drop { font-size: 15px; }
+  .ac-item { padding: 12px 14px; }
+  .gap-album { font-size: 12px; padding: 6px 10px; }
+  .wish-card h4 { font-size: 15px; }
+  .wish-card p  { font-size: 13px; }
+  .page-title { font-size: 20px; }
+  .modal { padding: 24px 20px; }
+  .modal h3 { font-size: 20px; }
+  .form-label { font-size: 12px; }
+}
 </style></head><body>
 <div id="root">Testing...</div>
 <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
@@ -3014,15 +3039,19 @@ function MobileApp() {
   const [mAuthModal, setMAuthModal] = useState(false);
   const [mAuthInput, setMAuthInput] = useState("");
   const [mAuthError, setMAuthError] = useState("");
+  const [mModal, setMModal] = useState(null);
+  const [mForm, setMForm] = useState({artist:"",album:"",year:"",format:"LP",pressingType:"",notes:""});
+  const [mArtistSugs, setMArtistSugs] = useState([]);
+  const [mAlbumSugs, setMAlbumSugs] = useState([]);
   const [gapQuery, setGapQuery] = useState("");
   const [gapSugs, setGapSugs] = useState([]);
   const [gapArtists, setGapArtists] = useState([]);
   const mAuthCbRef = useRef(null);
 
-  useEffect(() => {
-    (async () => {
+  useEffect(function() {
+    (async function() {
       const c = await sget(K.COL); if(c) setCol(c);
-      let w = await sget(K.WISH);
+      var w = await sget(K.WISH);
       if(!w||!w.length){w=SEED_WISH;await sset(K.WISH,w);}
       setWish(w);
       const u = await sget(K.UP); if(u) setUp(u);
@@ -3030,11 +3059,11 @@ function MobileApp() {
     })();
   }, []);
 
-  useEffect(()=>{if(loaded)sset(K.COL,col);},[col,loaded]);
-  useEffect(()=>{if(loaded)sset(K.WISH,wish);},[wish,loaded]);
-  useEffect(()=>{if(loaded)sset(K.UP,up);},[up,loaded]);
+  useEffect(function(){if(loaded)sset(K.COL,col);},[col,loaded]);
+  useEffect(function(){if(loaded)sset(K.WISH,wish);},[wish,loaded]);
+  useEffect(function(){if(loaded)sset(K.UP,up);},[up,loaded]);
 
-  const showToast = msg => { setToast({msg,on:true}); setTimeout(()=>setToast(t=>({...t,on:false})),2200); };
+  const showToast = function(msg) { setToast({msg:msg,on:true}); setTimeout(function(){setToast(function(t){return {...t,on:false};});},2200); };
 
   function mRequireAuth(cb) {
     if(isAdmin()){cb();return;}
@@ -3049,16 +3078,43 @@ function MobileApp() {
     } else { setMAuthError("Incorrect password"); setMAuthInput(""); }
   }
 
+  function onMArtistChange(v) {
+    setMForm(function(x){return {...x,artist:v,album:"",year:""};});
+    if(!v){setMArtistSugs([]);return;}
+    const vl=v.toLowerCase();
+    const s=window.ALL_ARTISTS.filter(function(a){return a.toLowerCase().startsWith(vl);});
+    const c=window.ALL_ARTISTS.filter(function(a){return !a.toLowerCase().startsWith(vl)&&a.toLowerCase().includes(vl);});
+    setMArtistSugs([...s,...c].slice(0,8));
+  }
+  function pickMArtist(a) {
+    const albums=[...new Set([...(window.DISCOGRAPHIES[a]||[])])];
+    setMForm(function(x){return {...x,artist:a,album:"",year:""};});
+    setMArtistSugs([]);
+    setMAlbumSugs(albums.slice(0,20));
+  }
+  function onMAlbumChange(v) {
+    setMForm(function(x){return {...x,album:v};});
+    if(!mForm.artist)return;
+    const all=window.DISCOGRAPHIES[mForm.artist]||[];
+    setMAlbumSugs(v?all.filter(function(a){return a.toLowerCase().includes(v.toLowerCase());}).slice(0,12):all.slice(0,20));
+  }
+  function pickMAlbum(a) {
+    const meta=(window.ALBUM_META[mForm.artist]&&window.ALBUM_META[mForm.artist][a])||{};
+    const yr=(window.ALBUM_YEARS[mForm.artist]&&window.ALBUM_YEARS[mForm.artist][a])||"";
+    setMForm(function(x){return {...x,album:a,year:x.year||meta.year||yr||""};});
+    setMAlbumSugs([]);
+  }
+
   function onGapQuery(v) {
     setGapQuery(v);
     if(!v.trim()){setGapSugs([]);return;}
     const vl=v.toLowerCase();
-    const s=ALL_ARTISTS.filter(a=>a.toLowerCase().startsWith(vl));
-    const c=ALL_ARTISTS.filter(a=>!a.toLowerCase().startsWith(vl)&&a.toLowerCase().includes(vl));
+    const s=Object.keys(window.DISCOGRAPHIES).filter(function(a){return a.toLowerCase().startsWith(vl);});
+    const c=Object.keys(window.DISCOGRAPHIES).filter(function(a){return !a.toLowerCase().startsWith(vl)&&a.toLowerCase().includes(vl);});
     setGapSugs([...s,...c].slice(0,10));
   }
-  function addGapArtist(a){
-    if(!gapArtists.includes(a))setGapArtists(prev=>[a,...prev]);
+  function addGapArtist(a) {
+    if(!gapArtists.includes(a))setGapArtists(function(prev){return [a,...prev];});
     setGapQuery(""); setGapSugs([]);
   }
 
@@ -3067,61 +3123,71 @@ function MobileApp() {
     {id:"watchlist", icon:"◈",label:"Watchlist"},
     {id:"gaps",      icon:"◻",label:"Gaps"},
     {id:"upcoming",  icon:"◷",label:"Upcoming"},
+    {id:"discover",  icon:"◉",label:"Discover"},
     {id:"settings",  icon:"◎",label:"Settings"},
   ];
 
-  const S = {
-    wrap:{display:"flex",flexDirection:"column",height:"100dvh",background:"var(--bg)",color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,overflow:"hidden"},
-    content:{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"14px 16px 80px"},
-    bottomNav:{position:"fixed",bottom:0,left:0,right:0,display:"flex",flexDirection:"row",borderTop:"1px solid var(--bdr)",background:"var(--bg2)",paddingBottom:"env(safe-area-inset-bottom,0px)",zIndex:50},
-    navBtn:(active)=>({flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,background:"none",border:"none",borderTop:active?"2px solid var(--acc)":"2px solid transparent",color:active?"var(--acc)":"var(--mut)",fontSize:9,fontFamily:"sans-serif",padding:"8px 2px 6px",cursor:"pointer"}),
-    card:{background:"var(--card)",border:"1px solid var(--bdr)",borderRadius:5,padding:"14px 16px",marginBottom:10},
-    input:{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,padding:"10px 12px",width:"100%",marginBottom:10,outline:"none",boxSizing:"border-box"},
-  };
-
   return (
-    <div style={S.wrap}>
-      <div style={{padding:"14px 16px 10px",borderBottom:"1px solid var(--bdr)",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
+    <div style={{display:"flex",flexDirection:"column",height:"100dvh",background:"var(--bg)",color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,overflow:"hidden"}}>
+      <div style={{padding:"12px 16px 8px",borderBottom:"1px solid var(--bdr)",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between"}}>
         <div style={{fontFamily:"var(--serif)",fontSize:20,color:"var(--acc)",fontStyle:"italic"}}>VinylBrain</div>
-        <div style={{fontSize:11,color:"var(--mut)"}}>{col.length} records{getSBUrl()?" ● cloud":""}</div>
+        <div style={{fontSize:11,color:"var(--mut)"}}>{col.length} records</div>
       </div>
 
-      <div style={S.content}>
+      <div style={{flex:1,overflowY:"auto",WebkitOverflowScrolling:"touch",padding:"14px 16px 80px"}}>
+
         {tab==="collection" && (
           <div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
               <div style={{color:"var(--mut)",fontSize:11}}>{col.length} records</div>
-              <button className="btn pri" onClick={()=>{}}>+ Add Record</button>
+              <button className="btn pri" onClick={function(){setMModal("add-record");}}>+ Add Record</button>
             </div>
             {col.length===0
-              ? <div style={{...S.card,color:"var(--mut)",textAlign:"center",fontSize:12}}>No records yet. Use desktop to add records.</div>
-              : [...col].sort((a,b)=>a.artist.localeCompare(b.artist)).map(r=>(
-                <div key={r.id} style={S.card}>
-                  <div style={{fontWeight:700,marginBottom:2}}>{r.artist}</div>
-                  <div style={{fontStyle:"italic",color:"var(--mut)",fontSize:12,marginBottom:4}}>{r.album}</div>
-                  <div style={{display:"flex",gap:8,flexWrap:"wrap",fontSize:10,color:"var(--mut)"}}>
-                    {r.year&&<span>{r.year}</span>}
-                    {r.genre&&<span style={{color:"var(--acc2)"}}>{r.genre}</span>}
-                    {r.format&&r.format!=="LP"&&<span>{r.format}</span>}
+              ? <div className="card" style={{color:"var(--mut)",textAlign:"center",fontSize:12,padding:24}}>No records yet.</div>
+              : [...col].sort(function(a,b){return a.artist.localeCompare(b.artist);}).map(function(r) {
+                return (
+                  <div key={r.id} className="card" style={{marginBottom:8,display:"flex",gap:12,alignItems:"center"}}>
+                    <AlbumArt artist={r.artist} album={r.album} size={56}/>
+                    <div style={{flex:1,minWidth:0}}>
+                      <div style={{fontWeight:600,fontSize:13}}>{r.artist}</div>
+                      <div style={{color:"var(--mut)",fontSize:12,fontStyle:"italic",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{r.album}</div>
+                      <div style={{display:"flex",gap:8,marginTop:3,flexWrap:"wrap"}}>
+                        {r.year&&<span style={{fontSize:10,color:"var(--acc)"}}>{r.year}</span>}
+                        {r.genre&&<span style={{fontSize:10,color:"var(--acc2)"}}>{r.genre}</span>}
+                        {r.format&&r.format!=="LP"&&<span style={{fontSize:10,color:"var(--mut)"}}>{r.format}</span>}
+                        {r.pressingType&&<span style={{fontSize:10,color:"var(--mut)"}}>{r.pressingType}</span>}
+                      </div>
+                    </div>
+                    <button className="btn ghost" style={{fontSize:10,padding:"3px 8px",flexShrink:0,color:"var(--red)",borderColor:"#3a1a1a"}}
+                      onClick={function(){mRequireAuth(function(){if(!window.confirm("Remove?"))return;setCol(function(prev){return prev.filter(function(x){return x.id!==r.id;});});showToast("Removed");});}}>✕</button>
                   </div>
-                </div>
-              ))
+                );
+              })
             }
           </div>
         )}
 
         {tab==="watchlist" && (
           <div>
-            <div style={{color:"var(--mut)",fontSize:11,marginBottom:14}}>{wish.length} items</div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+              <div style={{color:"var(--mut)",fontSize:11}}>{wish.length} items</div>
+              <button className="btn pri" onClick={function(){setMModal("add-wish");}}>+ Add</button>
+            </div>
             {wish.length===0
-              ? <div style={{...S.card,color:"var(--mut)",textAlign:"center",fontSize:12}}>Nothing on watchlist.</div>
-              : wish.map(w=>(
-                <div key={w.id} style={S.card}>
-                  <div style={{fontWeight:700,marginBottom:2}}>{w.artist}</div>
-                  <div style={{fontStyle:"italic",color:"var(--mut)",fontSize:12,marginBottom:4}}>{w.album}</div>
-                  {w.alertUnder&&<div style={{fontSize:10,color:"var(--acc2)"}}>Alert under ${w.alertUnder}</div>}
-                </div>
-              ))
+              ? <div className="card" style={{color:"var(--mut)",textAlign:"center",fontSize:12,padding:24}}>Nothing on watchlist.</div>
+              : wish.map(function(w) {
+                return (
+                  <div key={w.id} className="card" style={{marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                    <div>
+                      <div style={{fontWeight:600}}>{w.artist}</div>
+                      <div style={{color:"var(--mut)",fontSize:12,fontStyle:"italic"}}>{w.album}</div>
+                      {w.alertUnder&&<div style={{fontSize:10,color:"var(--acc2)",marginTop:2}}>Alert under ${w.alertUnder}</div>}
+                    </div>
+                    <button className="btn ghost" style={{fontSize:10,padding:"2px 8px"}}
+                      onClick={function(){mRequireAuth(function(){setWish(function(prev){return prev.filter(function(x){return x.id!==w.id;});});});}}>✕</button>
+                  </div>
+                );
+              })
             }
           </div>
         )}
@@ -3129,44 +3195,51 @@ function MobileApp() {
         {tab==="gaps" && (
           <div>
             <div style={{position:"relative",marginBottom:14}}>
-              <input style={S.input} placeholder="Search any artist..." value={gapQuery}
-                onChange={e=>onGapQuery(e.target.value)}
-                onKeyDown={e=>{if(e.key==="Enter"&&gapSugs.length){addGapArtist(gapSugs[0]);e.preventDefault();}}}
-                onBlur={()=>setTimeout(()=>setGapSugs([]),200)}
+              <input style={{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,padding:"10px 12px",width:"100%",outline:"none",boxSizing:"border-box"}}
+                placeholder="Search any artist..." value={gapQuery}
+                onChange={function(e){onGapQuery(e.target.value);}}
+                onKeyDown={function(e){if(e.key==="Enter"&&gapSugs.length){addGapArtist(gapSugs[0]);e.preventDefault();}}}
+                onBlur={function(){setTimeout(function(){setGapSugs([]);},200);}}
                 autoComplete="off"/>
               {gapSugs.length>0&&(
                 <div style={{position:"absolute",top:"100%",left:0,right:0,background:"var(--card)",border:"1px solid var(--bdr)",borderRadius:3,zIndex:50,maxHeight:200,overflowY:"auto"}}>
-                  {gapSugs.map(a=><div key={a} style={{padding:"10px 12px",borderBottom:"1px solid var(--bdr)",fontSize:12,cursor:"pointer"}} onMouseDown={()=>addGapArtist(a)}>{a}</div>)}
+                  {gapSugs.map(function(a){return <div key={a} style={{padding:"10px 12px",borderBottom:"1px solid var(--bdr)",fontSize:12,cursor:"pointer"}} onMouseDown={function(){addGapArtist(a);}}>{a}</div>;})}
                 </div>
               )}
             </div>
-            {gapArtists.length===0&&<div style={{...S.card,color:"var(--mut)",fontSize:12}}>Search an artist to see their discography.</div>}
-            {gapArtists.map(artist=>{
-              const all=DISCOGRAPHIES[artist]||[];
-              const owned=col.filter(r=>r.artist===artist).map(r=>r.album);
+            {gapArtists.length>0&&(
+              <button className="btn ghost" style={{fontSize:10,padding:"2px 8px",marginBottom:12}} onClick={function(){setGapArtists([]);setGapQuery("");}}>↺ reset</button>
+            )}
+            {gapArtists.length===0&&<div className="card" style={{color:"var(--mut)",fontSize:12,textAlign:"center",padding:20}}>Search an artist to see their discography.</div>}
+            {gapArtists.map(function(artist) {
+              const all=window.DISCOGRAPHIES[artist]||[];
+              const owned=col.filter(function(r){return r.artist===artist;}).map(function(r){return r.album;});
               if(!all.length)return null;
               return(
-                <div key={artist} style={{...S.card,marginBottom:12}}>
+                <div key={artist} className="card" style={{marginBottom:12}}>
                   <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
                     <div style={{fontFamily:"var(--serif)",color:"var(--acc)",fontSize:15}}>{artist}</div>
                     <div style={{display:"flex",alignItems:"center",gap:8}}>
                       <span style={{fontSize:10,color:"var(--mut)"}}>{owned.length}/{all.length}</span>
-                      <button className="btn ghost" style={{fontSize:10,padding:"2px 8px"}} onClick={()=>setGapArtists(p=>p.filter(a=>a!==artist))}>x</button>
+                      <button className="btn ghost" style={{fontSize:10,padding:"2px 8px"}} onClick={function(){setGapArtists(function(p){return p.filter(function(a){return a!==artist;});});}}>✕</button>
                     </div>
                   </div>
+                  <div style={{height:3,background:"var(--bdr)",borderRadius:2,marginBottom:8}}>
+                    <div style={{height:"100%",width:Math.round(owned.length/all.length*100)+"%",background:"linear-gradient(90deg,var(--acc2),var(--acc))",borderRadius:2}}/>
+                  </div>
                   <div style={{display:"flex",flexWrap:"wrap",gap:5}}>
-                    {all.map(album=>{
-                      const own=owned.some(o=>o.toLowerCase().includes(album.toLowerCase().slice(0,10)));
+                    {all.map(function(album){
+                      const own=owned.some(function(o){return o.toLowerCase().includes(album.toLowerCase().slice(0,10));});
                       return(
                         <div key={album} style={{fontSize:10,padding:"4px 8px",border:"1px solid",borderRadius:3,
                           borderColor:own?"var(--grn)":"var(--bdr)",color:own?"var(--grn)":"var(--fg)",
                           background:own?"rgba(74,140,92,0.1)":"transparent",cursor:own?"default":"pointer"}}
-                          onMouseDown={()=>{
+                          onMouseDown={function(){
                             if(own)return;
-                            mRequireAuth(()=>{
-                              const meta=(ALBUM_META[artist]&&ALBUM_META[artist][album])||{};
-                              const yr=(ALBUM_YEARS[artist]&&ALBUM_YEARS[artist][album])||"";
-                              setCol(prev=>[...prev,{id:Date.now(),artist,album,year:meta.year||yr,label:meta.label||"",genre:meta.genre||"",format:"LP",pressingType:"",pressing:"",notes:"",added:new Date().toISOString()}]);
+                            mRequireAuth(function(){
+                              const meta=(window.ALBUM_META[artist]&&window.ALBUM_META[artist][album])||{};
+                              const yr=(window.ALBUM_YEARS[artist]&&window.ALBUM_YEARS[artist][album])||"";
+                              setCol(function(prev){return [...prev,{id:Date.now(),artist:artist,album:album,year:meta.year||yr,label:meta.label||"",genre:meta.genre||"",format:"LP",pressingType:"",pressing:"",notes:"",added:new Date().toISOString()}];});
                               showToast("Added: "+album);
                             });
                           }}>
@@ -3182,66 +3255,158 @@ function MobileApp() {
         )}
 
         {tab==="upcoming" && (
-          <div>
-            <div style={{marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-              <div style={{color:"var(--mut)",fontSize:11}}>{up.length} upcoming</div>
-              <a href="https://www.last.fm/music/+releases/new" target="_blank" rel="noopener noreferrer" className="btn ghost" style={{fontSize:11}}>Last.fm</a>
-            </div>
-            {up.length===0&&<div style={{...S.card,color:"var(--mut)",textAlign:"center",fontSize:12}}>No upcoming releases tracked.</div>}
-            {up.map(u=>(
-              <div key={u.id} style={S.card}>
-                <div style={{fontWeight:700}}>{u.artist}</div>
-                <div style={{fontStyle:"italic",color:"var(--mut)",fontSize:12}}>{u.album}</div>
-                {u.date&&<div style={{fontSize:10,color:"var(--acc)",marginTop:4}}>{u.date}</div>}
-              </div>
-            ))}
+          <div style={{paddingBottom:8}}>
+            <UpcomingSearch up={up} setUp={setUp} requireAuth={mRequireAuth} showToast={showToast}/>
+          </div>
+        )}
+
+        {tab==="discover" && (
+          <div style={{paddingBottom:8}}>
+            <DiscoverTab/>
           </div>
         )}
 
         {tab==="settings" && (
-          <div style={S.card}>
+          <div className="card">
             <div style={{fontFamily:"var(--serif)",color:"var(--acc)",fontSize:16,marginBottom:10}}>Cloud Sync</div>
-            <div style={{fontSize:11,marginBottom:8,color:getSBUrl()?"var(--grn)":"var(--mut)"}}>
-              {getSBUrl()?"Connected":"Not connected"}
+            <div style={{fontSize:11,color:getSBUrl()?"var(--grn)":"var(--mut)",marginBottom:8}}>
+              {getSBUrl()?"✓ Connected":"Not connected — configure on desktop"}
             </div>
-            <div style={{fontSize:11,color:"var(--mut)"}}>Configure sync on desktop version.</div>
+            <div style={{fontSize:11,color:"var(--mut)"}}>Collection syncs automatically when connected.</div>
           </div>
         )}
       </div>
 
-      <div style={S.bottomNav}>
-        {TABS.map(t=>(
-          <button key={t.id} style={S.navBtn(tab===t.id)} onClick={()=>setTab(t.id)}>
-            <span style={{fontSize:16,lineHeight:1}}>{t.icon}</span>
-            {t.label}
-          </button>
-        ))}
+      <div style={{position:"fixed",bottom:0,left:0,right:0,display:"flex",borderTop:"1px solid var(--bdr)",background:"var(--bg2)",paddingBottom:"env(safe-area-inset-bottom,0px)",zIndex:50}}>
+        {TABS.map(function(t) {
+          const active = tab===t.id;
+          return (
+            <button key={t.id} onClick={function(){setTab(t.id);}}
+              style={{flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",gap:2,background:"none",border:"none",borderTop:active?"2px solid var(--acc)":"2px solid transparent",color:active?"var(--acc)":"var(--mut)",fontSize:8,fontFamily:"sans-serif",padding:"7px 2px 5px",cursor:"pointer"}}>
+              <span style={{fontSize:14,lineHeight:1}}>{t.icon}</span>
+              {t.label}
+            </button>
+          );
+        })}
       </div>
 
+      {/* Add Record Modal */}
+      {mModal==="add-record" && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:100,display:"flex",alignItems:"flex-end"}}>
+          <div style={{background:"var(--bg2)",borderRadius:"12px 12px 0 0",padding:"20px 16px",width:"100%",maxHeight:"88vh",overflowY:"auto",boxSizing:"border-box"}}>
+            <div style={{fontFamily:"var(--serif)",color:"var(--acc)",fontSize:18,marginBottom:16}}>Add Record</div>
+            <div style={{position:"relative",marginBottom:10}}>
+              <input style={{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,padding:"10px 12px",width:"100%",outline:"none",boxSizing:"border-box"}}
+                placeholder="Artist *" value={mForm.artist}
+                onChange={function(e){onMArtistChange(e.target.value);}}
+                onBlur={function(){setTimeout(function(){setMArtistSugs([]);},200);}}
+                autoComplete="off"/>
+              {mArtistSugs.length>0&&(
+                <div style={{position:"absolute",top:"100%",left:0,right:0,background:"var(--card)",border:"1px solid var(--bdr)",borderRadius:3,zIndex:50,maxHeight:180,overflowY:"auto"}}>
+                  {mArtistSugs.map(function(a){return <div key={a} style={{padding:"10px 12px",borderBottom:"1px solid var(--bdr)",fontSize:12,cursor:"pointer"}} onMouseDown={function(){pickMArtist(a);}}>{a}</div>;})}
+                </div>
+              )}
+            </div>
+            <div style={{position:"relative",marginBottom:10}}>
+              <input style={{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,padding:"10px 12px",width:"100%",outline:"none",boxSizing:"border-box"}}
+                placeholder={mForm.artist?"Album *":"Pick artist first"} value={mForm.album}
+                disabled={!mForm.artist}
+                onChange={function(e){onMAlbumChange(e.target.value);}}
+                onFocus={function(){if(mForm.artist){const all=window.DISCOGRAPHIES[mForm.artist]||[];setMAlbumSugs(all.slice(0,20));}}}
+                onBlur={function(){setTimeout(function(){setMAlbumSugs([]);},200);}}
+                autoComplete="off"/>
+              {mAlbumSugs.length>0&&(
+                <div style={{position:"absolute",top:"100%",left:0,right:0,background:"var(--card)",border:"1px solid var(--bdr)",borderRadius:3,zIndex:50,maxHeight:200,overflowY:"auto"}}>
+                  {mAlbumSugs.map(function(a){return <div key={a} style={{padding:"10px 12px",borderBottom:"1px solid var(--bdr)",fontSize:12,cursor:"pointer"}} onMouseDown={function(){pickMAlbum(a);}}>{a}</div>;})}
+                </div>
+              )}
+            </div>
+            <input style={{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,padding:"10px 12px",width:"100%",marginBottom:10,outline:"none",boxSizing:"border-box"}}
+              placeholder="Year (auto-fills)" value={mForm.year}
+              onChange={function(e){setMForm(function(x){return {...x,year:e.target.value};});}}/>
+            <select style={{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,padding:"10px 12px",width:"100%",marginBottom:10,outline:"none"}}
+              value={mForm.format} onChange={function(e){setMForm(function(x){return {...x,format:e.target.value};});}}>
+              {["LP","2xLP","3xLP","EP","12-inch Single","7-inch Single","Box Set","Picture Disc","Colored Vinyl"].map(function(v){return <option key={v}>{v}</option>;})}
+            </select>
+            <select style={{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,padding:"10px 12px",width:"100%",marginBottom:16,outline:"none"}}
+              value={mForm.pressingType} onChange={function(e){setMForm(function(x){return {...x,pressingType:e.target.value};});}}>
+              <option value="">Pressing Type</option>
+              {["Original","Original US","Original UK","Original EU","Original JP","Reissue","Reissue US","Reissue UK","180g Reissue","Anniversary Edition","Limited Edition","Promo","Test Pressing"].map(function(v){return <option key={v}>{v}</option>;})}
+            </select>
+            <div style={{display:"flex",gap:8}}>
+              <button className="btn ghost" style={{flex:1}} onClick={function(){setMModal(null);setMForm({artist:"",album:"",year:"",format:"LP",pressingType:"",notes:""});setMArtistSugs([]);setMAlbumSugs([]);}}>Cancel</button>
+              <button className="btn pri" style={{flex:1}} onClick={function(){
+                if(!mForm.artist.trim()||!mForm.album.trim()){alert("Artist + Album required");return;}
+                mRequireAuth(function(){
+                  setCol(function(prev){return [...prev,{id:Date.now(),artist:mForm.artist.trim(),album:mForm.album.trim(),year:mForm.year,format:mForm.format,pressingType:mForm.pressingType,label:"",genre:"",pressing:"",notes:mForm.notes,added:new Date().toISOString()}];});
+                  showToast("Record added");
+                  setMModal(null);
+                  setMForm({artist:"",album:"",year:"",format:"LP",pressingType:"",notes:""});
+                  setMArtistSugs([]);setMAlbumSugs([]);
+                });
+              }}>Add Record</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Wish Modal */}
+      {mModal==="add-wish" && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:100,display:"flex",alignItems:"flex-end"}}>
+          <div style={{background:"var(--bg2)",borderRadius:"12px 12px 0 0",padding:"20px 16px",width:"100%",maxHeight:"80vh",overflowY:"auto",boxSizing:"border-box"}}>
+            <div style={{fontFamily:"var(--serif)",color:"var(--acc)",fontSize:18,marginBottom:16}}>Add to Watchlist</div>
+            <input style={{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,padding:"10px 12px",width:"100%",marginBottom:10,outline:"none",boxSizing:"border-box"}}
+              placeholder="Artist *" value={mForm.artist}
+              onChange={function(e){onMArtistChange(e.target.value);}}/>
+            <input style={{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,padding:"10px 12px",width:"100%",marginBottom:10,outline:"none",boxSizing:"border-box"}}
+              placeholder="Album *" value={mForm.album}
+              onChange={function(e){setMForm(function(x){return {...x,album:e.target.value};});}}/>
+            <input style={{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,padding:"10px 12px",width:"100%",marginBottom:16,outline:"none",boxSizing:"border-box"}}
+              placeholder="Alert under $ (optional)" value={mForm.notes}
+              onChange={function(e){setMForm(function(x){return {...x,notes:e.target.value};});}}/>
+            <div style={{display:"flex",gap:8}}>
+              <button className="btn ghost" style={{flex:1}} onClick={function(){setMModal(null);setMForm({artist:"",album:"",year:"",format:"LP",pressingType:"",notes:""});}}>Cancel</button>
+              <button className="btn pri" style={{flex:1}} onClick={function(){
+                if(!mForm.artist.trim()||!mForm.album.trim()){alert("Artist + Album required");return;}
+                mRequireAuth(function(){
+                  setWish(function(prev){return [...prev,{id:Date.now(),artist:mForm.artist.trim(),album:mForm.album.trim(),notes:mForm.notes,alertUnder:mForm.notes?parseFloat(mForm.notes):null,priority:"medium",added:new Date().toISOString()}];});
+                  showToast("Added to watchlist");
+                  setMModal(null);
+                  setMForm({artist:"",album:"",year:"",format:"LP",pressingType:"",notes:""});
+                });
+              }}>Save</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Auth Modal */}
       {mAuthModal&&(
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:200,display:"flex",alignItems:"center",justifyContent:"center",padding:20}}>
           <div style={{background:"var(--bg2)",borderRadius:8,padding:"24px 20px",width:"100%",maxWidth:340}}>
             <div style={{fontFamily:"var(--serif)",color:"var(--acc)",fontSize:18,marginBottom:8}}>Password Required</div>
             <input type="password" placeholder="Password" value={mAuthInput}
-              style={{...S.input,marginBottom:8}}
-              onChange={e=>setMAuthInput(e.target.value)}
-              onKeyDown={e=>e.key==="Enter"&&mSubmitAuth()}
-              ref={el=>el&&el.focus()}/>
+              style={{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:14,padding:"12px",width:"100%",marginBottom:8,outline:"none",boxSizing:"border-box"}}
+              onChange={function(e){setMAuthInput(e.target.value);}}
+              onKeyDown={function(e){if(e.key==="Enter")mSubmitAuth();}}
+              ref={function(el){if(el)el.focus();}}/>
             {mAuthError&&<div style={{color:"var(--red)",fontSize:11,marginBottom:8}}>{mAuthError}</div>}
             <div style={{display:"flex",gap:8}}>
-              <button className="btn ghost" style={{flex:1}} onClick={()=>setMAuthModal(false)}>Cancel</button>
+              <button className="btn ghost" style={{flex:1}} onClick={function(){setMAuthModal(false);}}>Cancel</button>
               <button className="btn pri" style={{flex:1}} onClick={mSubmitAuth}>Unlock</button>
             </div>
           </div>
         </div>
       )}
 
-      <div style={{position:"fixed",bottom:80,left:"50%",transform:"translateX(-50%)",background:"var(--card)",border:"1px solid var(--acc)",borderRadius:4,color:"var(--acc)",fontSize:11,padding:"8px 14px",opacity:toast.on?1:0,transition:"opacity .25s",pointerEvents:"none",whiteSpace:"nowrap",zIndex:200}}>
+      <div style={{position:"fixed",bottom:72,left:"50%",transform:"translateX(-50%)",background:"var(--card)",border:"1px solid var(--acc)",borderRadius:4,color:"var(--acc)",fontSize:11,padding:"8px 14px",opacity:toast.on?1:0,transition:"opacity .25s",pointerEvents:"none",whiteSpace:"nowrap",zIndex:300}}>
         {toast.msg}
       </div>
     </div>
   );
 }
+
+
 function AppEntry() {
   const [isMobile, setIsMobile] = useState(false);
   useEffect(() => {
