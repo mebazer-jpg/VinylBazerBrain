@@ -1290,7 +1290,13 @@ async function lastfmGetAlbums(artist) {
     return [];
   }
 }
-// Data globals defined in plain script above — accessible directly
+// Grab data globals from window (set by plain data script)
+var DISCOGRAPHIES = window.DISCOGRAPHIES;
+var ALBUM_YEARS = window.ALBUM_YEARS;
+var ALBUM_META = window.ALBUM_META;
+var GENRES = window.GENRES;
+var ALL_ARTISTS = window.ALL_ARTISTS;
+var ARTIST_NAMES_ONLY = window.ARTIST_NAMES_ONLY;
 
 // Data loaded from plain script above — access via window globals
 // (defined in the data script tag before this one)
