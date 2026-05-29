@@ -1555,6 +1555,9 @@ async function mbAutoUpcoming(artists) {
 // (defined in the data script tag before this one)
 
 // Global error display for debugging
+window.addEventListener("unhandledrejection", function(e) {
+  console.error("Unhandled promise rejection:", e.reason);
+});
 window.onerror = function(msg, src, line, col, err) {
   var d = document.getElementById("root");
   if (d) d.innerHTML = '<div style="color:#ff6b6b;padding:20px;font-family:monospace;font-size:13px;background:#111;min-height:100vh"><h2>JS Error</h2><p>' + msg + '</p><p>Line: ' + line + '</p><p>' + (err && err.stack ? err.stack.slice(0,500) : "") + "</p></div>";
@@ -1726,15 +1729,22 @@ function AlbumArt({artist, album, size}) {
 
   useEffect(function() {
     var cancelled = false;
-    var url = "https://ws.audioscrobbler.com/2.0/?method=album.getinfo&artist=" + encodeURIComponent(artist) + "&album=" + encodeURIComponent(album) + "&api_key=" + KEY + "&format=json";
-    fetch(url).then(function(r){return r.json();}).then(function(data) {
-      if (cancelled) return;
-      var images = data.album && data.album.image;
-      if (!images) return;
-      var img = images.find(function(i){return i.size==="extralarge";}) || images.find(function(i){return i.size==="large";});
-      var src = img && img["#text"];
-      if (src && !src.includes("2a96cbd8b46e442fc41c2b86b821562f")) setArt(src);
-    }).catch(function(){});
+    try {
+      var url = "https://ws.audioscrobbler.com/2.0/?method=album.getinfo&artist=" + encodeURIComponent(artist) + "&album=" + encodeURIComponent(album) + "&api_key=" + KEY + "&format=json";
+      fetch(url)
+        .then(function(r){ return r.json(); })
+        .then(function(data) {
+          if (cancelled) return;
+          try {
+            var images = data.album && data.album.image;
+            if (!images) return;
+            var img = images.find(function(i){return i.size==="extralarge";}) || images.find(function(i){return i.size==="large";});
+            var src = img && img["#text"];
+            if (src && !src.includes("2a96cbd8b46e442fc41c2b86b821562f")) setArt(src);
+          } catch(e2) {}
+        })
+        .catch(function(){});
+    } catch(e) {}
     return function() { cancelled = true; };
   }, [artist, album]);
 
