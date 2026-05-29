@@ -4,22 +4,7 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0,
   "Santigold": ["Santogold","Santigold","Master of My Make-Believe","99 Cents","I Don't Want: The Gold Fire Sessions"],
-  "Stevie Ray Vaughan": ["Texas Flood","Couldn't Stand the Weather","Soul to Soul","Live Alive","In Step","The Sky Is Crying","In the Beginning","Greatest Hits","Live at the El Mocambo"],
-  "Daryl Hall and John Oates": ["Whole Oats","Abandoned Luncheonette","War Babies","Daryl Hall and John Oates","Bigger Than Both of Us","Beauty on a Back Street","Along the Red Ledge","X-Static","Voices","Private Eyes","H2O","Rock n Soul Part 1","Big Bam Boom","Ooh Yeah","Change of Season","Do It for Love","Our Kind of Soul"],
-  "Hall and Oates": ["Whole Oats","Abandoned Luncheonette","War Babies","Daryl Hall and John Oates","Bigger Than Both of Us","Beauty on a Back Street","Along the Red Ledge","X-Static","Voices","Private Eyes","H2O","Rock n Soul Part 1","Big Bam Boom","Ooh Yeah","Change of Season","Do It for Love","Our Kind of Soul"],
-  "Hozier": ["Hozier","Wasteland Baby!","Unreal Unearth","Unheard"],
-  "Lord Huron": ["Lonesome Dreams","Strange Trails","Vide Noir","Long Lost"],
-  "Cat Power": ["Dear Sir","Myra Lee","What Would the Community Think","Moon Pix","The Covers Record","You Are Free","The Greatest","Jukebox","Sun","Wanderer","Covers"],
-  "Phosphorescent": ["A Hundred Times or More","Aw Come Aw Wry","Pride","To Willie","Muchacho","C'est La Vie","Revelator"],
-  "Gillian Welch": ["Revival","Hell Among the Yearlings","Time (The Revelator)","Soul Journey","The Harrow and the Harvest"],
-  "Bonnie Raitt": ["Bonnie Raitt","Give It Up","Takin My Time","Streetlights","Home Plate","Sweet Forgiveness","The Glow","Green Light","Nine Lives","Nick of Time","Luck of the Draw","Longing in Their Hearts","Road Tested","Fundamental","Silver Lining","Souls Alike","Slipstream","Just Like That"],
-  "Norah Jones": ["Come Away with Me","Feels Like Home","Not Too Late","The Fall","Little Broken Hearts","Day Breaks","Pick Me Up Off the Floor","I Dream of Christmas","Visions"],
-  "Feist": ["Monarch Lay Down in the Water","Let It Die","The Reminder","Metals","Pleasure","Multitudes"],
-  "Neko Case": ["The Virginian","Furnace Room Lullaby","Blacklisted","The Tigers Have Spoken","Fox Confessor Brings the Fold","Middle Cyclone","The Worse Things Get the Harder I Fight","Hell-On","Wild Creatures"],
-  "Coldplay": ["Parachutes","A Rush of Blood to the Head","X&Y","Viva la Vida or Death and All His Friends","Mylo Xyloto","Ghost Stories","A Head Full of Dreams","Everyday Life","Music of the Spheres","Moon Music"]
-,
-  "Duran Duran": ["Duran Duran","Rio","Seven and the Ragged Tiger","Arena","Notorious","Big Thing","Liberty","Duran Duran (The Wedding Album)","Thank You","Medazzaland","Pop Trash","Astronaut","Red Carpet Massacre","All You Need Is Now","Paper Gods","Future Past"],
-  "A-ha": ["Hunting High and Low","Scoundrel Days","Stay on These Roads","East of the Sun West of the Moon","Memorial Beach","Minor Earth Major Sky","Lifelines","Analogue","Foot of the Mountain","Cast in Steel","True North"],
+  "Stevie Ray Vaughan": ["Texas Flood","Couldn't Stand the Weather","Soul to Soul","Live Alive","In Step","The Sky Is Crying","In the Beginning","Greatest Hits","Live at the El Mocambo"]  "A-ha": ["Hunting High and Low","Scoundrel Days","Stay on These Roads","East of the Sun West of the Moon","Memorial Beach","Minor Earth Major Sky","Lifelines","Analogue","Foot of the Mountain","Cast in Steel","True North"],
   "Tears for Fears": ["The Hurting","Songs from the Big Chair","The Seeds of Love","Elemental","Raoul and the Kings of Spain","Everybody Loves a Happy Ending","The Tipping Point"],
   "Simple Minds": ["Life in a Day","Real to Real Cacophony","Empires and Dance","Sons and Fascination","New Gold Dream","Sparkle in the Rain","Once Upon a Time","Street Fighting Years","Real Life","Good News from the Next World","Neapolis","Our Secrets Are the Same","Cry","Black and White 050505","Graffiti Soul","Sense of Discovery","Direction of the Heart"],
   "Human League": ["Reproduction","Travelogue","Dare","Love and Dancing","Hysteria","Crash","Romantic","Octopus","Secrets","Credo","Anthology"],
@@ -348,7 +333,7 @@ hr.divider{border:none;border-top:1px solid var(--bdr);margin:22px 0}
 
 /* ── Mobile sizing fixes ─────────────────────────────── */
 @media (max-width: 900px) {
-  body { font-size: 15px; }
+  body { font-size: 17px; }
   .card { padding: 14px 16px; }
   .cell-artist { font-size: 15px; }
   .cell-album  { font-size: 13px; }
@@ -377,7 +362,7 @@ hr.divider{border:none;border-top:1px solid var(--bdr);margin:22px 0}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
 <script>
 // ─── Known discographies ─────────────────────────────────────────────────────
-const DISCOGRAPHIES = {
+var DISCOGRAPHIES = {
   "4AD Artists": ["Cocteau Twins", "Dead Can Dance", "This Mortal Coil", "Pixies", "Throwing Muses", "Belly"],
   "A Tribe Called Quest": ["People's Instinctive Travels and the Paths of Rhythm", "The Low End Theory", "Midnight Marauders", "Beats, Rhymes and Life", "The Love Movement", "We Got It from Here... Thank You 4 Your Service"],
   "AC/DC": ["High Voltage", "T.N.T.", "Dirty Deeds Done Dirt Cheap", "Let There Be Rock", "Powerage", "Highway to Hell", "Back in Black", "For Those About to Rock", "Flick of the Switch", "Fly on the Wall", "Who Made Who", "Blow Up Your Video", "The Razors Edge", "Ballbreaker", "Stiff Upper Lip", "Black Ice", "Rock or Bust", "Power Up"],
@@ -842,10 +827,62 @@ const DISCOGRAPHIES = {
   "boygenius": ["boygenius", "The Record"],
   "illuminati hotties": ["Kiss Yr Frenemies", "FREE IH: This Is Not the One You've Been Waiting For", "Let Me Do One More"],
   "serpentwithfeet": ["blisters", "soil", "DEACON", "Grip"],
+,
+  "Daryl Hall and John Oates": ["Whole Oats","Abandoned Luncheonette","War Babies","Daryl Hall and John Oates","Bigger Than Both of Us","Beauty on a Back Street","Along the Red Ledge","X-Static","Voices","Private Eyes","H2O","Rock n Soul Part 1","Big Bam Boom","Ooh Yeah","Change of Season","Do It for Love","Our Kind of Soul"],
+  "Hall and Oates": ["Whole Oats","Abandoned Luncheonette","War Babies","Daryl Hall and John Oates","Bigger Than Both of Us","Beauty on a Back Street","Along the Red Ledge","X-Static","Voices","Private Eyes","H2O","Rock n Soul Part 1","Big Bam Boom","Ooh Yeah","Change of Season","Do It for Love","Our Kind of Soul"],
+  "Hozier": ["Hozier","Wasteland Baby!","Unreal Unearth","Unheard"],
+  "Lord Huron": ["Lonesome Dreams","Strange Trails","Vide Noir","Long Lost"],
+  "Cat Power": ["Dear Sir","Myra Lee","What Would the Community Think","Moon Pix","The Covers Record","You Are Free","The Greatest","Jukebox","Sun","Wanderer","Covers"],
+  "Phosphorescent": ["A Hundred Times or More","Aw Come Aw Wry","Pride","To Willie","Muchacho","C'est La Vie","Revelator"],
+  "Gillian Welch": ["Revival","Hell Among the Yearlings","Time (The Revelator)","Soul Journey","The Harrow and the Harvest"],
+  "Bonnie Raitt": ["Bonnie Raitt","Give It Up","Takin My Time","Streetlights","Home Plate","Sweet Forgiveness","The Glow","Green Light","Nine Lives","Nick of Time","Luck of the Draw","Longing in Their Hearts","Road Tested","Fundamental","Silver Lining","Souls Alike","Slipstream","Just Like That"],
+  "Norah Jones": ["Come Away with Me","Feels Like Home","Not Too Late","The Fall","Little Broken Hearts","Day Breaks","Pick Me Up Off the Floor","I Dream of Christmas","Visions"],
+  "Feist": ["Monarch Lay Down in the Water","Let It Die","The Reminder","Metals","Pleasure","Multitudes"],
+  "Neko Case": ["The Virginian","Furnace Room Lullaby","Blacklisted","The Tigers Have Spoken","Fox Confessor Brings the Fold","Middle Cyclone","The Worse Things Get the Harder I Fight","Hell-On","Wild Creatures"],
+  "Coldplay": ["Parachutes","A Rush of Blood to the Head","X&Y","Viva la Vida or Death and All His Friends","Mylo Xyloto","Ghost Stories","A Head Full of Dreams","Everyday Life","Music of the Spheres","Moon Music"]
+,
+  "Duran Duran": ["Duran Duran","Rio","Seven and the Ragged Tiger","Arena","Notorious","Big Thing","Liberty","Duran Duran (The Wedding Album)","Thank You","Medazzaland","Pop Trash","Astronaut","Red Carpet Massacre","All You Need Is Now","Paper Gods","Future Past"],
+
+,
+  "Santigold": ["Santogold","Santigold","Master of My Make-Believe","99 Cents","I Don't Want: The Gold Fire Sessions"],
+  "Stevie Ray Vaughan": ["Texas Flood","Couldn't Stand the Weather","Soul to Soul","Live Alive","In Step","The Sky Is Crying","In the Beginning","Greatest Hits"],
+  "The Go-Gos": ["Beauty and the Beat","Vacation","Talk Show","God Bless the Go-Gos","Live in Central Park"],
+  "Belinda Carlisle": ["Belinda","Heaven on Earth","Runaway Horses","Live Your Life Be Free","Real","A Woman and a Man","A Place on Earth","Voila"],
+  "Bangles": ["All Over the Place","Different Light","Everything","Eternal Flame","Doll Revolution","Sweetheart of the Sun"],
+  "Cyndi Lauper": ["She's So Unusual","True Colors","A Night to Remember","Hat Full of Stars","Twelve Deadly Cyns","Sisters of Avalon","At Last","Memphis Blues","Detour"],
+  "Pat Benatar": ["In the Heat of the Night","Crimes of Passion","Precious Time","Get Nervous","Live from Earth","Tropico","Seven the Hard Way","Wide Awake in Dreamland","True Love","Innamorata","Go"],
+  "Joan Jett and the Blackhearts": ["Bad Reputation","I Love Rock n Roll","Album","Glorious Results of a Misspent Youth","Good Music","Up Your Alley","The Hit List","Notorious","Pure and Simple","Sinner","Unvarnished"],
+  "B-52s": ["The B-52s","Wild Planet","Party Mix","Mesopotamia","Whammy!","Bouncing off the Satellites","Cosmic Thing","Good Stuff","Funplex"],
+  "Cocteau Twins": ["Garlands","Head Over Heels","Treasure","Victorialand","The Moon and the Melodies","Blue Bell Knoll","Heaven or Las Vegas","Four-Calendar Cafe","Milk and Kisses","Stars and Topsoil"],
+  "Dead Can Dance": ["Dead Can Dance","Spleen and Ideal","Within the Realm of a Dying Sun","The Serpent's Egg","Aion","Into the Labyrinth","Spiritchaser","Anastasis","Dionysus"],
+  "This Mortal Coil": ["It'll End in Tears","Filigree and Shadow","Blood"],
+  "Hozier": ["Hozier","Wasteland Baby!","Unreal Unearth","Unheard"],
+  "Cat Power": ["Dear Sir","Myra Lee","What Would the Community Think","Moon Pix","The Covers Record","You Are Free","The Greatest","Jukebox","Sun","Wanderer","Covers"],
+  "Neko Case": ["The Virginian","Furnace Room Lullaby","Blacklisted","The Tigers Have Spoken","Fox Confessor Brings the Fold","Middle Cyclone","The Worse Things Get the Harder I Fight","Hell-On","Wild Creatures"],
+  "Gillian Welch": ["Revival","Hell Among the Yearlings","Time (The Revelator)","Soul Journey","The Harrow and the Harvest"],
+  "Phosphorescent": ["A Hundred Times or More","Aw Come Aw Wry","Pride","To Willie","Muchacho","C'est La Vie","Revelator"],
+  "Lord Huron": ["Lonesome Dreams","Strange Trails","Vide Noir","Long Lost"],
+  "Bonnie Raitt": ["Bonnie Raitt","Give It Up","Takin My Time","Streetlights","Home Plate","Sweet Forgiveness","The Glow","Green Light","Nine Lives","Nick of Time","Luck of the Draw","Longing in Their Hearts","Road Tested","Fundamental","Silver Lining","Souls Alike","Slipstream","Just Like That"],
+  "Norah Jones": ["Come Away with Me","Feels Like Home","Not Too Late","The Fall","Little Broken Hearts","Day Breaks","Pick Me Up Off the Floor","Visions"],
+  "Feist": ["Let It Die","The Reminder","Metals","Pleasure","Multitudes"],
+  "Motels": ["The Motels","Careful","All Four One","Little Robbers","Shock"],
+  "X-Ray Spex": ["Germfree Adolescents","Conscious Consumer"],
+  "Prefab Sprout": ["Swoon","Steve McQueen","From Langley Park to Memphis","Protest Songs","Jordan The Comeback","Andromeda Heights","I Trawl the Megahertz","Let's Change the World with Music","Crimson/Red"],
+  "Blue Nile": ["A Walk Across the Rooftops","Hats","Peace at Last","High"],
+  "Lloyd Cole and the Commotions": ["Rattlesnakes","Easy Pieces","Mainstream","Lloyd Cole","Don't Get Weird on Me Babe","Bad Vibes","Love Story","Antidepressant","Standards","Guesswork"],
+  "Aztec Camera": ["High Land Hard Rain","Knife","Love","Stray","Dreamland","Frestonia"],
+  "Orange Juice": ["You Cant Hide Your Love Forever","Rip It Up","Texas Fever"],
+  "Associates": ["The Affectionate Punch","Sulk","Perhaps","Wild and Lonely"],
+  "Felt": ["Crumbling the Antiseptic Beauty","The Splendour of Fear","Ignite the Seven Cannons","Let the Snakes Crinkle Their Heads to Death","Forever Breathes the Lonely Word","Poem of the River","The Pictorial Jackson Review","Me and a Monkey on the Moon"],
+  "Raincoats": ["The Raincoats","Odyshape","Moving"],
+  "Altered Images": ["Happy Birthday","Pinky Blue","Bite"],
+  "Mission UK": ["God's Own Medicine","Children","Carved in Sand","Masque","Neverland","Blue"],
+  "Love and Rockets": ["Seventh Dream of Teenage Heaven","Express","Earth Sun Moon","Love and Rockets","Hot Trip to Heaven","Sweet F.A.","Lift"],
+  "Coldplay": ["Parachutes","A Rush of Blood to the Head","X&Y","Viva la Vida or Death and All His Friends","Mylo Xyloto","Ghost Stories","A Head Full of Dreams","Everyday Life","Music of the Spheres","Moon Music"]
 };
 
 // ─── Album years ─────────────────────────────────────────────────────────────
-const ALBUM_YEARS = {
+var ALBUM_YEARS = {
   "The Rolling Stones":{"The Rolling Stones":"1964","12 X 5":"1964","The Rolling Stones No. 2":"1965","Out of Our Heads":"1965","December's Children":"1965","Aftermath":"1966","Between the Buttons":"1967","Their Satanic Majesties Request":"1967","Beggars Banquet":"1968","Let It Bleed":"1969","Sticky Fingers":"1971","Exile on Main St.":"1972","Goats Head Soup":"1973","It's Only Rock 'n' Roll":"1974","Black and Blue":"1976","Some Girls":"1978","Emotional Rescue":"1980","Tattoo You":"1981","Undercover":"1983","Dirty Work":"1986","Steel Wheels":"1989","Voodoo Lounge":"1994","Bridges to Babylon":"1997","A Bigger Bang":"2005","Hackney Diamonds":"2023"},
   "David Bowie":{"David Bowie":"1967","Space Oddity":"1969","The Man Who Sold the World":"1970","Hunky Dory":"1971","The Rise and Fall of Ziggy Stardust":"1972","Aladdin Sane":"1973","Pin Ups":"1973","Diamond Dogs":"1974","Young Americans":"1975","Station to Station":"1976","Low":"1977","Heroes":"1977","Lodger":"1979","Scary Monsters":"1980","Let's Dance":"1983","Tonight":"1984","Never Let Me Down":"1987","Black Tie White Noise":"1993","Outside":"1995","Earthling":"1997","Hours...":"1999","Heathen":"2002","Reality":"2003","The Next Day":"2013","Blackstar":"2016"},
   "Lou Reed":{"Lou Reed":"1972","Transformer":"1972","Berlin":"1973","Rock n Roll Animal":"1974","Sally Can't Dance":"1974","Coney Island Baby":"1976","Rock and Roll Heart":"1976","Street Hassle":"1978","The Bells":"1979","Growing Up in Public":"1980","The Blue Mask":"1982","Legendary Hearts":"1983","New Sensations":"1984","Mistrial":"1986","New York":"1989","Magic and Loss":"1992","Set the Twilight Reeling":"1996","Ecstasy":"2000","The Raven":"2003","Lulu":"2011"},
@@ -1031,7 +1068,7 @@ const ALBUM_YEARS = {
 };
 
 // ─── Album metadata (year/label/genre) ────────────────────────────────────────
-const ALBUM_META = {
+var ALBUM_META = {
   "Bruce Springsteen": {
     "Greetings from Asbury Park, N.J.":{"year":"1973","label":"Columbia","genre":"Rock"},
     "The Wild, the Innocent & the E Street Shuffle":{"year":"1973","label":"Columbia","genre":"Rock"},
@@ -1248,7 +1285,7 @@ const ALBUM_META = {
 // full label/genre. Keyed as ALBUM_YEARS[artist][album] = "year".
 
 // ─── Genre list ───────────────────────────────────────────────────────────────
-const GENRES = [
+var GENRES = [
   "Alternative","Ambient","Americana","Art Rock","Avant-Garde","Blues","Blues Rock",
   "Bluegrass","Chamber Pop","Chicano Rock","Classical","Country","Country Rock",
   "Dance","Dream Pop","Electronic","Experimental","Folk","Folk Rock","Funk",
@@ -1260,7 +1297,7 @@ const GENRES = [
 ];
 
 // ─── Artist names for autocomplete ────────────────────────────────────────────
-const ARTIST_NAMES_ONLY = [
+var ARTIST_NAMES_ONLY = [
   // Classic Rock & Rock
   "Aerosmith","Alice Cooper","Alice in Chains","Allman Brothers Band","America","Bad Company",
   "Badfinger","Big Star","Black Flag","Black Sabbath","Blue Öyster Cult","Boston",
@@ -1409,7 +1446,7 @@ const ARTIST_NAMES_ONLY = [
   "Turnstile","Unwound","Xenia Rubinos","Yves Tumor","Zola Jesus",
 ];
 
-const ALL_ARTISTS = [...new Set([...Object.keys(DISCOGRAPHIES), ...ARTIST_NAMES_ONLY])].sort();
+var ALL_ARTISTS = [...new Set([...Object.keys(DISCOGRAPHIES), ...ARTIST_NAMES_ONLY])].sort();
 
 // Expose all data as globals
 window.DISCOGRAPHIES = DISCOGRAPHIES;
@@ -3213,7 +3250,7 @@ function MobileApp() {
   ];
 
   return (
-    <div style={{display:"flex",flexDirection:"column",height:"100dvh",background:"var(--bg)",color:"var(--fg)",fontFamily:"var(--mono)",overflow:"hidden"}}>
+    <div style={{display:"flex",flexDirection:"column",height:"100dvh",background:"var(--bg)",color:"var(--fg)",fontFamily:"var(--mono)",fontSize:17,overflow:"hidden"}}>
 
       {/* Header */}
       <div style={{padding:"16px 20px 12px",borderBottom:"1px solid var(--bdr)",flexShrink:0,display:"flex",alignItems:"center",justifyContent:"space-between",background:"var(--bg)"}}>
