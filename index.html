@@ -1588,6 +1588,36 @@ async function askClaude(messages, systemCtx) {
 // ─── styles ───────────────────────────────────────────────────────────────────
 
 // ─── main component ───────────────────────────────────────────────────────────
+function AlbumArt({artist, album, size}) {
+  const [art, setArt] = useState(null);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(function() {
+    var cancelled = false;
+    lastfmGetArt(artist, album).then(function(url) {
+      if (!cancelled) setArt(url);
+    });
+    return function() { cancelled = true; };
+  }, [artist, album]);
+
+  var sz = size || 80;
+  return (
+    <div style={{width:sz,height:sz,flexShrink:0,background:"#1c1917",border:"1px solid #2e2a25",borderRadius:3,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",position:"relative"}}>
+      {art ? (
+        <>
+          <img src={art} alt={album}
+            style={{width:"100%",height:"100%",objectFit:"cover",display:loaded?"block":"none"}}
+            onLoad={function(){setLoaded(true);}}
+            onError={function(){setArt(null);}}/>
+          {!loaded&&<div style={{fontSize:sz>60?24:16,opacity:0.25,position:"absolute"}}>◉</div>}
+        </>
+      ) : (
+        <div style={{fontSize:sz>60?24:16,opacity:0.25}}>◉</div>
+      )}
+    </div>
+  );
+}
+
 function VinylBrain() {
   const [col, setCol]   = useState([]);
   const [wish, setWish] = useState([]);
@@ -1803,36 +1833,6 @@ You help the user:
 
 Be conversational, warm, and specific. You love records. Keep responses concise — 2-4 short paragraphs max unless they ask for a list. Reference their actual collection when relevant.`;
 
-
-  function AlbumArt({artist, album, size}) {
-    const [art, setArt] = useState(null);
-    const [loaded, setLoaded] = useState(false);
-
-    useEffect(function() {
-      var cancelled = false;
-      lastfmGetArt(artist, album).then(function(url) {
-        if (!cancelled) setArt(url);
-      });
-      return function() { cancelled = true; };
-    }, [artist, album]);
-
-    var sz = size || 80;
-    return (
-      <div style={{width:sz,height:sz,flexShrink:0,background:"var(--card)",border:"1px solid var(--bdr)",borderRadius:3,display:"flex",alignItems:"center",justifyContent:"center",overflow:"hidden",position:"relative"}}>
-        {art ? (
-          <>
-            <img src={art} alt={album}
-              style={{width:"100%",height:"100%",objectFit:"cover",display:loaded?"block":"none"}}
-              onLoad={function(){setLoaded(true);}}
-              onError={function(){setArt(null);}}/>
-            {!loaded&&<div style={{fontSize:sz>60?24:16,opacity:0.25,position:"absolute"}}>◉</div>}
-          </>
-        ) : (
-          <div style={{fontSize:sz>60?24:16,opacity:0.25}}>◉</div>
-        )}
-      </div>
-    );
-  }
 
   function SettingsPanel() {
     const [url,  setUrl]  = useState(localStorage.getItem("sb_url")  || "");
