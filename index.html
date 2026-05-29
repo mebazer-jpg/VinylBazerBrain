@@ -1372,17 +1372,25 @@ async function mbSearchUpcoming(artist) {
     const groups = rgData["release-groups"] || [];
 
     // Filter to recent (last 2 years) and upcoming
+    // MusicBrainz dates can be "YYYY", "YYYY-MM", or "YYYY-MM-DD"
     return groups
       .filter(function(rg) {
-        const date = rg["first-release-date"] || "";
-        return date >= twoYearsAgo;
+        var date = rg["first-release-date"] || "";
+        if (!date) return false;
+        // Normalize to YYYY format for comparison
+        var year = parseInt(date.slice(0,4));
+        var cutoffYear = new Date().getFullYear() - 2;
+        return year >= cutoffYear;
       })
       .map(function(rg) {
+        var date = rg["first-release-date"] || "";
+        // Consider upcoming if date is in the future (compare year-month)
+        var isUpcoming = date > today;
         return {
           artist: artist,
           album: rg.title,
-          date: rg["first-release-date"] || "",
-          upcoming: (rg["first-release-date"] || "") > today
+          date: date,
+          upcoming: isUpcoming
         };
       })
       .sort(function(a,b) { return b.date.localeCompare(a.date); });
