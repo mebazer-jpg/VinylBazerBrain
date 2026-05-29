@@ -1812,7 +1812,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
     );
   }
   function GapAnalysis() {
-    const allDiscoArtists = Object.keys(DISCOGRAPHIES).sort();
+    const allDiscoArtists = Object.keys(window.DISCOGRAPHIES).sort();
     const artistsInCol = new Set(col.map(r=>r.artist).filter(Boolean));
     return (
       <div>
@@ -1841,11 +1841,11 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
           )}
         </div>
         <div style={{color:"var(--mut)",fontSize:11,marginBottom:16,display:"flex",alignItems:"center",gap:10}}>
-          <span>{[...artistsInCol].filter(a=>DISCOGRAPHIES[a]).length} from collection{browsedArtists.filter(a=>!artistsInCol.has(a)).length>0&&` + ${browsedArtists.filter(a=>!artistsInCol.has(a)).length} browsed`}</span>
+          <span>{[...artistsInCol].filter(a=>(window.DISCOGRAPHIES||{})[a]).length} from collection{browsedArtists.filter(a=>!artistsInCol.has(a)).length>0&&` + ${browsedArtists.filter(a=>!artistsInCol.has(a)).length} browsed`}</span>
           {browsedArtists.length>0&&<button className="btn ghost" style={{fontSize:10,padding:"2px 8px"}} onClick={()=>setBrowsedArtists([])}>clear browsed</button>}
         </div>
         {[...new Set([...allDiscoArtists.filter(a=>artistsInCol.has(a)),...browsedArtists])].map(artist=>{
-          const allAlbums=DISCOGRAPHIES[artist]||[];
+          const allAlbums=(window.DISCOGRAPHIES||{})[artist]||[];
           const owned=col.filter(r=>r.artist===artist).map(r=>r.album);
           if(!allAlbums.length)return null;
           const pct=Math.round(owned.length/allAlbums.length*100);
@@ -1874,8 +1874,8 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
                         <span className="gap-album-actions">
                           <span className="gap-btn gap-btn-col" onMouseDown={e=>{e.stopPropagation();requireAuth(()=>{
                             if(col.some(r=>r.artist===artist&&r.album===album)){showToast("Already owned");return;}
-                            const meta=ALBUM_META[artist]?.[album]||{};
-                            const yr=ALBUM_YEARS[artist]?.[album]||"";
+                            const meta=((window.ALBUM_META||{})[artist]&&(window.ALBUM_META||{})[artist][album])||{};
+                            const yr=((window.ALBUM_YEARS||{})[artist]&&(window.ALBUM_YEARS||{})[artist][album])||"";
                             setCol(prev=>[...prev,{id:Date.now(),artist,album,year:meta.year||yr||"",label:meta.label||"",genre:meta.genre||"",format:"LP",pressingType:"",pressing:"",notes:"",added:new Date().toISOString()}]);
                             showToast("Added to collection");
                           });}}>+col</span>
@@ -1893,7 +1893,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
             </div>
           );
         })}
-        {[...artistsInCol].filter(a=>DISCOGRAPHIES[a]).length===0&&browsedArtists.length===0&&(
+        {[...artistsInCol].filter(a=>(window.DISCOGRAPHIES||{})[a]).length===0&&browsedArtists.length===0&&(
           <div className="card"><div style={{color:"var(--mut)",fontSize:12}}>Search an artist above to explore their discography.</div></div>
         )}
       </div>
@@ -1934,7 +1934,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
     function onAlbumChange(v) {
       setF(x => ({ ...x, album:v, year:"", label:"", genre:"", pressing:"" }));
       if (!v.trim()) { setAlbumSugs([]); return; }
-      const knownAlbums = [...new Set([...(DISCOGRAPHIES[f.artist]||[]), ...col.filter(r=>r.artist===f.artist).map(r=>r.album)])];
+      const knownAlbums = [...new Set([...((window.DISCOGRAPHIES||{})[f.artist]||[]), ...col.filter(r=>r.artist===f.artist).map(r=>r.album)])];
       const vl = v.toLowerCase();
       const starts   = knownAlbums.filter(a => a.toLowerCase().startsWith(vl));
       const contains = knownAlbums.filter(a => !a.toLowerCase().startsWith(vl) && a.toLowerCase().includes(vl));
@@ -1942,8 +1942,8 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
     }
 
     function pickAlbum(a) {
-      const meta = ALBUM_META[f.artist]?.[a] || {};
-      const yearFallback = ALBUM_YEARS[f.artist]?.[a] || "";
+      const meta = ((window.ALBUM_META||{})[f.artist]&&(window.ALBUM_META||{})[f.artist][a])||{};
+      const yearFallback = ((window.ALBUM_YEARS||{})[f.artist]&&(window.ALBUM_YEARS||{})[f.artist][a])||"";
       setF(x => ({
         ...x, album:a,
         year:  x.year  || meta.year  || yearFallback,
@@ -1956,7 +1956,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
 
     function onAlbumFocus() {
       if (f.artist) {
-        const albums = [...new Set([...(DISCOGRAPHIES[f.artist]||[]), ...col.filter(r=>r.artist===f.artist).map(r=>r.album)])];
+        const albums = [...new Set([...((window.DISCOGRAPHIES||{})[f.artist]||[]), ...col.filter(r=>r.artist===f.artist).map(r=>r.album)])];
         if (albums.length) setAlbumSugs(albums.slice(0, 20));
       }
     }
@@ -2004,7 +2004,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
             {/* Album */}
             <div className="field" style={{position:"relative"}}>
               <label>Album *
-                {f.artist&&DISCOGRAPHIES[f.artist]&&<span style={{color:"var(--mut)",fontSize:9,marginLeft:6}}>{DISCOGRAPHIES[f.artist].length} known</span>}
+                {f.artist&&(window.DISCOGRAPHIES||{})[f.artist]&&<span style={{color:"var(--mut)",fontSize:9,marginLeft:6}}>{(window.DISCOGRAPHIES||{})[f.artist].length} known</span>}
               </label>
               <input ref={albumRef} type="text" placeholder={f.artist?"Start typing or click to see all…":"Pick artist first"} value={f.album}
                 disabled={!f.artist}
@@ -2019,7 +2019,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
             {/* Year — auto-filled from ALBUM_META */}
             <div className="field">
               <label>Year
-                {f.year&&(ALBUM_META[f.artist]&&ALBUM_META[f.artist][f.album]&&ALBUM_META[f.artist][f.album].year===f.year)&&<span style={{color:"var(--grn)",fontSize:9,marginLeft:6}}>✓ auto-filled</span>}
+                {f.year&&((window.ALBUM_META||{})[f.artist]&&(window.ALBUM_META||{})[f.artist][f.album]&&(window.ALBUM_META||{})[f.artist][f.album].year===f.year)&&<span style={{color:"var(--grn)",fontSize:9,marginLeft:6}}>✓ auto-filled</span>}
               </label>
               <input type="text" placeholder="e.g. 1984" value={f.year} onChange={e=>setF(x=>({...x,year:e.target.value}))} />
             </div>
@@ -2027,7 +2027,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
             {/* Label — auto-filled */}
             <div className="field">
               <label>Label
-                {f.label&&(ALBUM_META[f.artist]&&ALBUM_META[f.artist][f.album]&&ALBUM_META[f.artist][f.album].label===f.label)&&<span style={{color:"var(--grn)",fontSize:9,marginLeft:6}}>✓ auto-filled</span>}
+                {f.label&&((window.ALBUM_META||{})[f.artist]&&(window.ALBUM_META||{})[f.artist][f.album]&&(window.ALBUM_META||{})[f.artist][f.album].label===f.label)&&<span style={{color:"var(--grn)",fontSize:9,marginLeft:6}}>✓ auto-filled</span>}
               </label>
               <input type="text" placeholder="e.g. Columbia" value={f.label} onChange={e=>setF(x=>({...x,label:e.target.value}))} />
             </div>
@@ -2035,7 +2035,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
             {/* Genre — autocomplete from canonical list */}
             <div className="field" style={{position:"relative"}}>
               <label>Genre
-                {f.genre&&(ALBUM_META[f.artist]&&ALBUM_META[f.artist][f.album]&&ALBUM_META[f.artist][f.album].genre===f.genre)&&<span style={{color:"var(--grn)",fontSize:9,marginLeft:6}}>✓ auto-filled</span>}
+                {f.genre&&((window.ALBUM_META||{})[f.artist]&&(window.ALBUM_META||{})[f.artist][f.album]&&(window.ALBUM_META||{})[f.artist][f.album].genre===f.genre)&&<span style={{color:"var(--grn)",fontSize:9,marginLeft:6}}>✓ auto-filled</span>}
               </label>
               <input ref={genreRef} type="text" placeholder="Start typing…" value={f.genre}
                 onChange={e=>onGenreChange(e.target.value)}
@@ -2129,21 +2129,21 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
     function onAlbumChange(v) {
       setF(x=>({...x,album:v}));
       if(!v.trim()){setAlbumSugs([]);return;}
-      const knownAlbums=[...new Set([...(DISCOGRAPHIES[f.artist]||[]),...col.filter(r=>r.artist===f.artist).map(r=>r.album)])];
+      const knownAlbums=[...new Set([...((window.DISCOGRAPHIES||{})[f.artist]||[]),...col.filter(r=>r.artist===f.artist).map(r=>r.album)])];
       const vl=v.toLowerCase();
       const s=knownAlbums.filter(a=>a.toLowerCase().startsWith(vl));
       const c=knownAlbums.filter(a=>!a.toLowerCase().startsWith(vl)&&a.toLowerCase().includes(vl));
       setAlbumSugs([...new Set([...s,...c])].slice(0,8));
     }
     function pickAlbum(a){
-      const meta=ALBUM_META[f.artist]?.[a]||{};
-      const yearFallback=ALBUM_YEARS[f.artist]?.[a]||"";
+      const meta=((window.ALBUM_META||{})[f.artist]&&(window.ALBUM_META||{})[f.artist][a])||{};
+      const yearFallback=((window.ALBUM_YEARS||{})[f.artist]&&(window.ALBUM_YEARS||{})[f.artist][a])||"";
       setF(x=>({...x,album:a,year:x.year||meta.year||yearFallback,label:x.label||meta.label||"",genre:x.genre||meta.genre||""}));
       setAlbumSugs([]);
     }
     function onAlbumFocus(){
       if(!f.album&&f.artist){
-        const albums=[...new Set([...(DISCOGRAPHIES[f.artist]||[]),...col.filter(r=>r.artist===f.artist).map(r=>r.album)])];
+        const albums=[...new Set([...((window.DISCOGRAPHIES||{})[f.artist]||[]),...col.filter(r=>r.artist===f.artist).map(r=>r.album)])];
         if(albums.length)setAlbumSugs(albums.slice(0,10));
       }
     }
