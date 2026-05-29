@@ -1591,12 +1591,19 @@ async function askClaude(messages, systemCtx) {
 function AlbumArt({artist, album, size}) {
   const [art, setArt] = useState(null);
   const [loaded, setLoaded] = useState(false);
+  const KEY = "5476f5775f1202ebf9ad374d631be894";
 
   useEffect(function() {
     var cancelled = false;
-    lastfmGetArt(artist, album).then(function(url) {
-      if (!cancelled) setArt(url);
-    });
+    var url = "https://ws.audioscrobbler.com/2.0/?method=album.getinfo&artist=" + encodeURIComponent(artist) + "&album=" + encodeURIComponent(album) + "&api_key=" + KEY + "&format=json";
+    fetch(url).then(function(r){return r.json();}).then(function(data) {
+      if (cancelled) return;
+      var images = data.album && data.album.image;
+      if (!images) return;
+      var img = images.find(function(i){return i.size==="extralarge";}) || images.find(function(i){return i.size==="large";});
+      var src = img && img["#text"];
+      if (src && !src.includes("2a96cbd8b46e442fc41c2b86b821562f")) setArt(src);
+    }).catch(function(){});
     return function() { cancelled = true; };
   }, [artist, album]);
 
