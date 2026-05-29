@@ -3408,10 +3408,15 @@ function MobileApp() {
 
 
 function AppEntry() {
-  const [isMobile, setIsMobile] = useState(false);
+  function checkMobile() {
+    var w = window.innerWidth;
+    var ua = navigator.userAgent||"";
+    var isTouchDevice = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    return w <= 900 || isTouchDevice;
+  }
+  const [isMobile, setIsMobile] = useState(checkMobile);
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth <= 900);
-    check();
+    const check = () => setIsMobile(checkMobile());
     window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   }, []);
