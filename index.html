@@ -2114,7 +2114,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
     const [genreSugs,  setGenreSugs]  = useState([]);
     const albumRef = useRef(null);
     const genreRef = useRef(null);
-    const allKnownArtists = [...new Set([...ALL_ARTISTS, ...col.map(r=>r.artist).filter(Boolean)])].sort();
+    const allKnownArtists = [...new Set([...(window.ALL_ARTISTS||[]), ...col.map(r=>r.artist).filter(Boolean)])].sort();
 
     function onArtistChange(v) {
       setF(x=>({...x,artist:v}));
