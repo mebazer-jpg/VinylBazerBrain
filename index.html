@@ -1431,22 +1431,24 @@ async function sget(k) {
       const rows = await sbFetch(table + "?select=data&order=id");
       if (Array.isArray(rows) && rows.length > 0) {
         const cloudData = rows[0].data || [];
-        // Cloud is always authoritative when connected
-        localStorage.setItem(k, JSON.stringify(cloudData));
-        return cloudData;
+        // Only trust cloud if it has actual data
+        if (cloudData.length > 0) {
+          localStorage.setItem(k, JSON.stringify(cloudData));
+          return cloudData;
+        }
       }
-      // Cloud empty — if we have local data push it up
+      // Cloud empty or missing — use local and push it up
       if (localVal && localVal.length > 0) {
         sset(k, localVal);
         return localVal;
       }
-      return [];
+      return null;
     } catch(e) {
       console.warn("sget cloud error, using local:", e);
-      return localVal || [];
+      return localVal || null;
     }
   }
-  return localVal || [];
+  return localVal || null;
 }
 
 async function sset(k, v) {
@@ -1826,18 +1828,44 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
     );
   }
   function UpcomingSearch({up, setUp, requireAuth, showToast}) {
-    var queryState = useState("");
-    var query = queryState[0]; var setQuery = queryState[1];
-    var resultsState = useState(null);
-    var results = results = resultsState[0]; var setResults = resultsState[1];
-    var loadingState = useState(false);
-    var loading = loadingState[0]; var setLoading = loadingState[1];
-    var sugState = useState([]);
-    var sugs = sugState[0]; var setSugs = sugState[1];
+    const [query, setQuery] = useState("");
+    const [sugs, setSugs] = useState([]);
+    const [results, setResults] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [autoLoaded, setAutoLoaded] = useState(false);
+    const [autoResults, setAutoResults] = useState([]);
+    const [autoLoading, setAutoLoading] = useState(false);
+
+    // Auto-populate: fetch recent releases from collection artists on first load
+    useEffect(() => {
+      if (autoLoaded || !col.length) return;
+      setAutoLoaded(true);
+      setAutoLoading(true);
+      var ownedArtists = [...new Set(col.map(function(r){return r.artist;}).filter(Boolean))];
+      var sample = ownedArtists.slice(0, 20); // limit API calls
+      var found = [];
+      var done = 0;
+      sample.forEach(function(artist) {
+        lastfmGetAlbums(artist).then(function(albums) {
+          albums.slice(0, 3).forEach(function(album) {
+            var alreadyOwned = col.some(function(r){return r.artist===artist&&r.album===album;});
+            var alreadyIn = found.some(function(f){return f.artist===artist&&f.album===album;});
+            if (!alreadyOwned && !alreadyIn) {
+              found.push({artist:artist, album:album});
+            }
+          });
+          done++;
+          if (done === sample.length) {
+            setAutoResults(found.slice(0, 30));
+            setAutoLoading(false);
+          }
+        });
+      });
+    }, [col.length]);
 
     function onQueryChange(v) {
       setQuery(v);
-      if(!v.trim()){setSugs([]);return;}
+      if (!v) { setSugs([]); return; }
       var vl = v.toLowerCase();
       var s = window.ALL_ARTISTS.filter(function(a){return a.toLowerCase().startsWith(vl);});
       var c = window.ALL_ARTISTS.filter(function(a){return !a.toLowerCase().startsWith(vl)&&a.toLowerCase().includes(vl);});
@@ -1845,10 +1873,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
     }
 
     function searchArtist(artist) {
-      setQuery(artist);
-      setSugs([]);
-      setResults(null);
-      setLoading(true);
+      setQuery(artist); setSugs([]); setResults(null); setLoading(true);
       lastfmGetAlbums(artist).then(function(albums) {
         setResults({artist:artist, albums:albums});
         setLoading(false);
@@ -1857,9 +1882,8 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
 
     function saveRelease(artist, album) {
       requireAuth(function() {
-        if(up.some(function(u){return u.artist===artist&&u.album===album;})) {
-          showToast("Already tracking");
-          return;
+        if (up.some(function(u){return u.artist===artist&&u.album===album;})) {
+          showToast("Already tracking"); return;
         }
         setUp(function(prev){return [...prev,{id:Date.now(),artist:artist,album:album,date:"",notes:"",added:new Date().toISOString()}];});
         showToast("Saved to Upcoming");
@@ -1872,17 +1896,16 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
 
     return (
       <div>
-        {/* Saved upcoming releases */}
+        {/* Saved upcoming */}
         {up.length > 0 && (
           <div style={{marginBottom:24}}>
-            <div style={{color:"var(--mut)",fontSize:10,letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:8}}>Tracking</div>
+            <div style={{color:"var(--mut)",fontSize:10,letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:8}}>Tracking ({up.length})</div>
             {up.map(function(u) {
               return (
                 <div key={u.id} className="card" style={{marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <div>
                     <div style={{fontWeight:600}}>{u.artist}</div>
                     <div style={{color:"var(--mut)",fontSize:12,fontStyle:"italic"}}>{u.album}</div>
-                    {u.date&&<div style={{fontSize:10,color:"var(--acc)",marginTop:2}}>{u.date}</div>}
                   </div>
                   <button className="btn ghost" style={{fontSize:10,padding:"2px 8px"}} onClick={function(){removeUp(u.id);}}>✕</button>
                 </div>
@@ -1891,63 +1914,68 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
           </div>
         )}
 
-        {/* Search box */}
-        <div className="card" style={{marginBottom:16,padding:"10px 14px"}}>
-              <div style={{color:"var(--fg)",fontSize:12,marginBottom:4}}>Type any artist → Search → save releases you want to track</div>
-              <div style={{color:"var(--mut)",fontSize:11}}>Uses Last.fm to find their discography. Great for new releases you're anticipating.</div>
-            </div>
-            <div style={{color:"var(--mut)",fontSize:10,letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:8}}>Search an artist</div>
-        <div style={{position:"relative",marginBottom:16,maxWidth:520}}>
+        {/* Search */}
+        <div style={{color:"var(--mut)",fontSize:10,letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:8}}>Search an artist on Last.fm</div>
+        <div style={{position:"relative",marginBottom:20,maxWidth:520}}>
           <div style={{display:"flex",gap:8}}>
             <input type="text" placeholder="Artist name..." value={query}
               onChange={function(e){onQueryChange(e.target.value);}}
-              onKeyDown={function(e){if(e.key==="Enter"&&query.trim()){searchArtist(query.trim());}if(e.key==="Escape"){setSugs([]);};}}
+              onKeyDown={function(e){if(e.key==="Enter"&&query.trim())searchArtist(query.trim());if(e.key==="Escape")setSugs([]);}}
               onBlur={function(){setTimeout(function(){setSugs([]);},200);}}
-              autoComplete="off"
-              style={{flex:1}}/>
-            <button className="btn pri" onClick={function(){if(query.trim())searchArtist(query.trim());}}>
-              Search
-            </button>
+              autoComplete="off"/>
+            <button className="btn pri" onClick={function(){if(query.trim())searchArtist(query.trim());}}>Search</button>
           </div>
           {sugs.length>0&&(
             <div className="ac-drop">
-              {sugs.map(function(a) {
-                return <div key={a} className="ac-item" onMouseDown={function(){searchArtist(a);}}>{a}</div>;
-              })}
+              {sugs.map(function(a){return <div key={a} className="ac-item" onMouseDown={function(){searchArtist(a);}}>{a}</div>;})}
             </div>
           )}
         </div>
 
-        {loading&&(
-          <div className="card" style={{textAlign:"center",padding:20}}>
-            <div style={{color:"var(--mut)",fontSize:12}}>Searching Last.fm for {query}...</div>
+        {loading&&<div className="card" style={{textAlign:"center",padding:16,color:"var(--mut)",fontSize:12}}>Searching Last.fm for {query}...</div>}
+
+        {results&&!loading&&(
+          <div style={{marginBottom:24}}>
+            <div style={{color:"var(--mut)",fontSize:11,marginBottom:10}}>
+              Last.fm results for <strong style={{color:"var(--fg)"}}>{results.artist}</strong>
+            </div>
+            {results.albums.length===0&&<div className="card" style={{color:"var(--mut)",fontSize:12,textAlign:"center"}}>Nothing found.</div>}
+            {results.albums.map(function(album) {
+              var tracking = up.some(function(u){return u.artist===results.artist&&u.album===album;});
+              var owned = col.some(function(r){return r.artist===results.artist&&r.album===album;});
+              return (
+                <div key={album} className="card" style={{marginBottom:6,display:"flex",justifyContent:"space-between",alignItems:"center",opacity:owned?0.4:1}}>
+                  <div>
+                    <div style={{fontSize:13}}>{album}</div>
+                    {owned&&<div style={{fontSize:10,color:"var(--grn)"}}>already owned</div>}
+                    {tracking&&<div style={{fontSize:10,color:"var(--acc)"}}>tracking ✓</div>}
+                  </div>
+                  {!owned&&!tracking&&(
+                    <button className="btn ghost" style={{fontSize:11,padding:"4px 10px",flexShrink:0}} onClick={function(){saveRelease(results.artist,album);}}>+ Track</button>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
 
-        {results&&!loading&&(
+        {/* Auto-populated from collection */}
+        {autoLoading&&<div className="card" style={{textAlign:"center",padding:16,color:"var(--mut)",fontSize:12}}>Scanning your collection on Last.fm...</div>}
+        {autoResults.length>0&&(
           <div>
-            <div style={{color:"var(--mut)",fontSize:11,marginBottom:12}}>
-              Top releases for <strong style={{color:"var(--fg)"}}>{results.artist}</strong> on Last.fm
-            </div>
-            {results.albums.length===0&&(
-              <div className="card" style={{color:"var(--mut)",fontSize:12,textAlign:"center"}}>No releases found on Last.fm.</div>
-            )}
-            {results.albums.map(function(album) {
-              var alreadyTracking = up.some(function(u){return u.artist===results.artist&&u.album===album;});
-              var alreadyOwned = col.some(function(r){return r.artist===results.artist&&r.album===album;});
+            <div style={{color:"var(--mut)",fontSize:10,letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:8}}>Missing from your artists</div>
+            {autoResults.map(function(r, i) {
+              var tracking = up.some(function(u){return u.artist===r.artist&&u.album===r.album;});
               return (
-                <div key={album} className="card" style={{marginBottom:6,display:"flex",justifyContent:"space-between",alignItems:"center",opacity:alreadyOwned?0.5:1}}>
+                <div key={i} className="card" style={{marginBottom:6,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
                   <div>
-                    <div style={{fontSize:13}}>{album}</div>
-                    {alreadyOwned&&<div style={{fontSize:10,color:"var(--grn)"}}>in your collection</div>}
-                    {alreadyTracking&&<div style={{fontSize:10,color:"var(--acc)"}}>tracking</div>}
+                    <div style={{fontWeight:600,fontSize:12}}>{r.artist}</div>
+                    <div style={{color:"var(--mut)",fontSize:12,fontStyle:"italic"}}>{r.album}</div>
+                    {tracking&&<div style={{fontSize:10,color:"var(--acc)"}}>tracking ✓</div>}
                   </div>
-                  {!alreadyOwned&&!alreadyTracking&&(
-                    <button className="btn ghost" style={{fontSize:11,padding:"4px 10px"}} onClick={function(){saveRelease(results.artist,album);}}>
-                      + Track
-                    </button>
+                  {!tracking&&(
+                    <button className="btn ghost" style={{fontSize:11,padding:"4px 10px",flexShrink:0}} onClick={function(){saveRelease(r.artist,r.album);}}>+ Track</button>
                   )}
-                  {alreadyTracking&&<span style={{fontSize:11,color:"var(--acc)"}}>✓</span>}
                 </div>
               );
             })}
@@ -1956,6 +1984,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
       </div>
     );
   }
+
 
   function DiscoverTab() {
     var discoverState = useState(null);
@@ -2102,7 +2131,8 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
         </div>
         <div style={{color:"var(--mut)",fontSize:11,marginBottom:16,display:"flex",alignItems:"center",gap:10}}>
           <span>{[...artistsInCol].filter(a=>(window.DISCOGRAPHIES||{})[a]).length} from collection{browsedArtists.filter(a=>!artistsInCol.has(a)).length>0&&` + ${browsedArtists.filter(a=>!artistsInCol.has(a)).length} browsed`}</span>
-          {browsedArtists.length>0&&<button className="btn ghost" style={{fontSize:10,padding:"2px 8px"}} onClick={()=>setBrowsedArtists([])}>clear browsed</button>}
+          {browsedArtists.length>0&&<button className="btn ghost" style={{fontSize:10,padding:"2px 8px"}} onClick={()=>setBrowsedArtists([])}>✕ clear browsed</button>}
+          <button className="btn ghost" style={{fontSize:10,padding:"2px 8px"}} onClick={()=>{setBrowsedArtists([]);setArtistSearch("");}}>↺ reset</button>
         </div>
         {[...new Set([...allDiscoArtists.filter(a=>artistsInCol.has(a)),...browsedArtists])].map(artist=>{
           const allAlbums=(window.DISCOGRAPHIES||{})[artist]||[];
@@ -2488,33 +2518,118 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
   }
 
   function AddWishModal({ prefill }) {
-    const [f, setF] = useState({ artist:(prefill && prefill.artist)||"", album:(prefill && prefill.album)||"", notes:"", alertUnder:"", priority:"medium" });
+    const [f, setF] = useState({
+      artist: (prefill && prefill.artist) || "",
+      album:  (prefill && prefill.album)  || "",
+      notes: "", alertUnder: "", priority: "medium"
+    });
+    const [artistSugs, setArtistSugs] = useState([]);
+    const [albumSugs,  setAlbumSugs]  = useState([]);
+
+    function onArtistChange(v) {
+      setF(x => ({...x, artist:v, album:""}));
+      if (!v) { setArtistSugs([]); return; }
+      const vl = v.toLowerCase();
+      const s = window.ALL_ARTISTS.filter(a => a.toLowerCase().startsWith(vl));
+      const c = window.ALL_ARTISTS.filter(a => !a.toLowerCase().startsWith(vl) && a.toLowerCase().includes(vl));
+      setArtistSugs([...s, ...c].slice(0, 8));
+    }
+    function pickArtist(a) {
+      setF(x => ({...x, artist:a, album:""}));
+      setArtistSugs([]);
+      const albums = [...new Set([...(window.DISCOGRAPHIES[a]||[])])];
+      setAlbumSugs(albums.slice(0, 20));
+    }
+    function onAlbumChange(v) {
+      setF(x => ({...x, album:v}));
+      if (!f.artist) return;
+      const all = window.DISCOGRAPHIES[f.artist] || [];
+      setAlbumSugs(v ? all.filter(a => a.toLowerCase().includes(v.toLowerCase())).slice(0,12) : all.slice(0,20));
+    }
+    function pickAlbum(a) {
+      setF(x => ({...x, album:a}));
+      setAlbumSugs([]);
+    }
+
+    function save() {
+      if (!f.artist.trim() || !f.album.trim()) return;
+      requireAuth(() => {
+        if (wish.some(w => w.artist===f.artist && w.album===f.album)) { showToast("Already on watchlist"); return; }
+        setWish(prev => [...prev, {
+          id: Date.now(), artist:f.artist.trim(), album:f.album.trim(),
+          notes:f.notes, alertUnder: f.alertUnder ? parseFloat(f.alertUnder) : null,
+          priority:f.priority, added:new Date().toISOString()
+        }]);
+        setModal(null);
+        showToast("Added to watchlist");
+      });
+    }
+
     return (
       <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&setModal(null)}>
         <div className="modal">
           <h3>Add to Watchlist</h3>
-          <div className="form-grid">
-            <div className="field"><label>Artist *</label><input type="text" value={f.artist} onChange={e=>setF(x=>({...x,artist:e.target.value}))} /></div>
-            <div className="field"><label>Album *</label><input type="text" value={f.album} onChange={e=>setF(x=>({...x,album:e.target.value}))} /></div>
-            <div className="field"><label>Pressing Notes</label><input type="text" placeholder="e.g. US press only" value={f.notes} onChange={e=>setF(x=>({...x,notes:e.target.value}))} /></div>
-            <div className="field"><label>Alert Under ($)</label><input type="text" placeholder="e.g. 75" value={f.alertUnder} onChange={e=>setF(x=>({...x,alertUnder:e.target.value}))} /></div>
-            <div className="field full">
-              <label>Priority</label>
-              <select value={f.priority} onChange={e=>setF(x=>({...x,priority:e.target.value}))}>
-                <option value="high">High — actively hunting</option>
-                <option value="medium">Medium — would buy if I saw it</option>
-                <option value="low">Low — casual interest</option>
-              </select>
-            </div>
+
+          {/* Artist */}
+          <div className="form-row" style={{position:"relative"}}>
+            <label className="form-label">Artist *</label>
+            <input value={f.artist} onChange={e=>onArtistChange(e.target.value)}
+              onBlur={()=>setTimeout(()=>setArtistSugs([]),200)}
+              placeholder="Start typing..." autoComplete="off"/>
+            {artistSugs.length>0 && (
+              <div className="ac-drop">
+                {artistSugs.map(a=><div key={a} className="ac-item" onMouseDown={()=>pickArtist(a)}>{a}</div>)}
+              </div>
+            )}
           </div>
+
+          {/* Album */}
+          <div className="form-row" style={{position:"relative"}}>
+            <label className="form-label">Album *</label>
+            <input value={f.album}
+              onChange={e=>onAlbumChange(e.target.value)}
+              onFocus={()=>{if(f.artist){const all=window.DISCOGRAPHIES[f.artist]||[];setAlbumSugs(all.slice(0,20));}}}
+              onBlur={()=>setTimeout(()=>setAlbumSugs([]),200)}
+              disabled={!f.artist}
+              placeholder={f.artist?"Type or pick album...":"Pick artist first"}
+              autoComplete="off"/>
+            {albumSugs.length>0 && (
+              <div className="ac-drop">
+                {albumSugs.map(a=><div key={a} className="ac-item" onMouseDown={()=>pickAlbum(a)}>{a}</div>)}
+              </div>
+            )}
+          </div>
+
+          <div className="form-row">
+            <label className="form-label">Alert under $</label>
+            <input value={f.alertUnder} onChange={e=>setF(x=>({...x,alertUnder:e.target.value}))}
+              placeholder="e.g. 75" type="number"/>
+          </div>
+
+          <div className="form-row">
+            <label className="form-label">Notes</label>
+            <input value={f.notes} onChange={e=>setF(x=>({...x,notes:e.target.value}))}
+              placeholder="e.g. Original pressing only"/>
+          </div>
+
+          <div className="form-row">
+            <label className="form-label">Priority</label>
+            <select value={f.priority} onChange={e=>setF(x=>({...x,priority:e.target.value}))}>
+              <option value="high">High</option>
+              <option value="medium">Medium</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+
           <div className="modal-footer">
             <button className="btn ghost" onClick={()=>setModal(null)}>Cancel</button>
-            <button className="btn pri" onClick={()=>{ if(!f.artist.trim()||!f.album.trim()){showToast("Artist + Album required");return;} addWish(f); }}>Add to Watchlist</button>
+            <button className="btn pri" onClick={save}>Save</button>
           </div>
         </div>
       </div>
     );
   }
+
 
   function AddUpModal() {
     const [f, setF] = useState({ artist:"", album:"", date:"", label:"", why:"" });
