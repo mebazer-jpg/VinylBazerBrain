@@ -666,6 +666,37 @@ const DISCOGRAPHIES = {
   "boygenius": ["boygenius", "The Record"],
   "illuminati hotties": ["Kiss Yr Frenemies", "FREE IH: This Is Not the One You've Been Waiting For", "Let Me Do One More"],
   "serpentwithfeet": ["blisters", "soil", "DEACON", "Grip"],
+,
+  "Santigold": ["Santogold","Santigold","Master of My Make-Believe","99 Cents","I Don't Want: The Gold Fire Sessions"],
+  "Stevie Ray Vaughan": ["Texas Flood","Couldn't Stand the Weather","Soul to Soul","Live Alive","In Step","Family Style","The Sky Is Crying","In the Beginning","Greatest Hits","Live at the El Mocambo"],
+  "Stevie Ray Vaughan and Double Trouble": ["Texas Flood","Couldn't Stand the Weather","Soul to Soul","Live Alive","In Step","The Sky Is Crying","In the Beginning"],
+  "Hall and Oates": ["Whole Oats","Abandoned Luncheonette","War Babies","Daryl Hall and John Oates","Bigger Than Both of Us","Beauty on a Back Street","Along the Red Ledge","X-Static","Voices","Private Eyes","H2O","Rock 'n Soul Part 1","Big Bam Boom","Ooh Yeah!","Change of Season","Do It for Love","Our Kind of Soul","Home for Christmas"],
+  "Daryl Hall and John Oates": ["Whole Oats","Abandoned Luncheonette","War Babies","Daryl Hall and John Oates","Bigger Than Both of Us","Beauty on a Back Street","Along the Red Ledge","X-Static","Voices","Private Eyes","H2O","Rock 'n Soul Part 1","Big Bam Boom","Ooh Yeah!","Change of Season","Do It for Love","Our Kind of Soul"],
+  "Cocteau Twins": ["Garlands","Head Over Heels","Treasure","Victorialand","The Moon and the Melodies","Blue Bell Knoll","Heaven or Las Vegas","Four-Calendar Cafe","Milk and Kisses","Stars and Topsoil"],
+  "Mazzy Star": ["She Hangs Brightly","So Tonight That I Might See","Among My Swan","Seasons of Your Day"],
+  "Phosphorescent": ["A Hundred Times or More","Aw Come Aw Wry","Pride","To Willie","Muchacho","C'est La Vie","Revelator","Phosphorescent Sings Willie Nelson"],
+  "Gillian Welch": ["Revival","Hell Among the Yearlings","Time (The Revelator)","Soul Journey","The Harrow and the Harvest","Boots No. 1: The Official Revival Bootleg"],
+  "Bonnie Raitt": ["Bonnie Raitt","Give It Up","Takin' My Time","Streetlights","Home Plate","Sweet Forgiveness","The Glow","Green Light","Nine Lives","Nick of Time","Luck of the Draw","Longing in Their Hearts","Road Tested","Fundamental","Silver Lining","Souls Alike","Slipstream","Just Like That"],
+  "Sheryl Crow": ["Tuesday Night Music Club","Sheryl Crow","The Globe Sessions","C'mon C'mon","Wildflower","Detours","100 Miles from Memphis","Feels Like Home","Be Myself","Evolution","Threads"],
+  "Norah Jones": ["Come Away with Me","Feels Like Home","Not Too Late","The Fall","Little Broken Hearts","Day Breaks","Pick Me Up Off the Floor","I Dream of Christmas","Visions"],
+  "Cat Power": ["Dear Sir","Myra Lee","What Would the Community Think","Moon Pix","The Covers Record","You Are Free","The Greatest","Jukebox","Sun","Wanderer","Covers"],
+  "Feist": ["Monarch (Lay Down in the Water)","Let It Die","The Reminder","Metals","Pleasure","Multitudes"],
+  "Neko Case": ["The Virginian","Furnace Room Lullaby","Blacklisted","The Tigers Have Spoken","Fox Confessor Brings the Flood","Middle Cyclone","The Worse Things Get the Harder I Fight","Hell-On","Wild Creatures"],
+  "Jenny Lewis": ["Rabbit Fur Coat","Acid Tongue","The Voyager","On the Line"],
+  "Rilo Kiley": ["Take Offs and Landings","The Execution of All Things","More Adventurous","Under the Blacklight"],
+  "Thao and the Get Down Stay Down": ["We Brave Bee Stings and All","Know Better Learn Faster","A Thousand Tiny Pieces","Thao and Mirah","Commonwealth","A Man Alive","Temple"],
+  "Dessa": ["A Badly Broken Code","Castor the Twin","Parts of Speech","Chime","Sound the Bells: Recorded Live with the Minnesota Orchestra"],
+  "Lake Street Dive": ["Lake Street Dive","Fun Machine","Bad Self Portraits","Side Pony","Free Yourself Up","Obviously","Fun Machine: The Sequel"],
+  "Hozier": ["Hozier","Hozier (Expanded)","Wasteland Baby!","Unreal Unearth","Unheard"],
+  "Dermot Kennedy": ["Without Fear","Sonder"],
+  "Lord Huron": ["Lonesome Dreams","Strange Trails","Vide Noir","Long Lost"],
+  "Caamp": ["Boys (Side A)","By and By","Lavender Days","What I Know","Witches"],
+  "Gregory Alan Isakov": ["That Sea, the Gambler","This Empty Northern Hemisphere","The Weatherman","Evening Machines","For My Crimes"],
+  "Iron and Wine": ["The Creek Drank the Cradle","Our Endless Numbered Days","Woman King","The Shepherd's Dog","Around the Well","Kiss Each Other Clean","Ghost on Ghost","Beast Epic","Who Can See Forever"],
+  "Frightened Rabbit": ["Sing the Greys","The Midnight Organ Fight","The Winter of Mixed Drinks","Pedestrian Verse","Modern Leper","Painting of a Panic Attack"],
+  "The National": ["The National","Sad Songs for Dirty Lovers","Cherry Tree","Alligator","Boxer","High Violet","Trouble Will Find Me","Sleep Well Beast","I Am Easy to Find","First Two Pages of Frankenstein","Laugh Track"],
+  "Radiohead": ["Pablo Honey","The Bends","OK Computer","Kid A","Amnesiac","Hail to the Thief","In Rainbows","The King of Limbs","A Moon Shaped Pool","OK Computer OKNOTOK 1997-2017","Kid A Mnesia"],
+  "Coldplay": ["Parachutes","A Rush of Blood to the Head","X&Y","Viva la Vida or Death and All His Friends","Mylo Xyloto","Ghost Stories","A Head Full of Dreams","Everyday Life","Music of the Spheres","Moon Music"]
 };
 
 // ─── Album years ─────────────────────────────────────────────────────────────
@@ -1246,6 +1277,19 @@ window.ARTIST_NAMES_ONLY = ARTIST_NAMES_ONLY;
 <script type="text/babel" data-presets="react">
 
 const { useState, useEffect, useRef } = React;
+const LASTFM_KEY = "5476f5775f1202ebf9ad374d631be894";
+
+async function lastfmGetAlbums(artist) {
+  try {
+    const url = `https://ws.audioscrobbler.com/2.0/?method=artist.gettopalbums&artist=${encodeURIComponent(artist)}&api_key=${LASTFM_KEY}&format=json&limit=30`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const albums = (data.topalbums && data.topalbums.album) || [];
+    return albums.map(a => a.name).filter(a => a && a !== "(null)");
+  } catch(e) {
+    return [];
+  }
+}
 // Data globals defined in plain script above — accessible directly
 
 // Data loaded from plain script above — access via window globals
@@ -1719,7 +1763,379 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
       </div>
     );
   }
-  function GapAnalysis() {
+  function RecentReleasesTab() {
+    const [releases, setReleases] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [manualModal, setManualModal] = useState(false);
+    const CURRENT_YEAR = new Date().getFullYear();
+
+    async function loadRecent() {
+      setLoading(true);
+      setError(null);
+      setReleases(null);
+      try {
+        const ownedArtists = [...new Set(col.map(r=>r.artist).filter(Boolean))];
+        if(!ownedArtists.length) {
+          setError("Add some records to your collection first.");
+          setLoading(false);
+          return;
+        }
+
+        // Fetch top albums for each owned artist, filter to last 5 years
+        const cutoffYear = CURRENT_YEAR - 5;
+        const allRecent = [];
+
+        await Promise.all(ownedArtists.map(async artist => {
+          try {
+            const url = `https://ws.audioscrobbler.com/2.0/?method=artist.getTopAlbums&artist=${encodeURIComponent(artist)}&api_key=${LASTFM_KEY}&format=json&limit=20`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const albums = (data.topalbums && data.topalbums.album) || [];
+            albums.forEach(a => {
+              if(a.name && a.name !== "(null)") {
+                // Check against ALBUM_YEARS for known releases
+                const yr = (ALBUM_YEARS[artist] && ALBUM_YEARS[artist][a.name]) || "";
+                const yearNum = parseInt(yr);
+                // Include if year is recent OR if it's not in our local DB (might be new)
+                const isOwned = col.some(r => r.artist===artist && r.album===a.name);
+                const isInLocal = DISCOGRAPHIES[artist] && DISCOGRAPHIES[artist].includes(a.name);
+                if(!isOwned && (!isInLocal || (yearNum && yearNum >= cutoffYear))) {
+                  allRecent.push({
+                    artist,
+                    album: a.name,
+                    year: yr || "",
+                    playcount: parseInt(a.playcount) || 0,
+                    isNew: !isInLocal
+                  });
+                }
+              }
+            });
+          } catch(e) {}
+        }));
+
+        // Sort: new/unknown first, then by playcount
+        allRecent.sort((a,b) => {
+          if(a.isNew && !b.isNew) return -1;
+          if(!a.isNew && b.isNew) return 1;
+          return b.playcount - a.playcount;
+        });
+
+        setReleases(allRecent.slice(0, 40));
+      } catch(e) {
+        setError("Error: " + e.message);
+      }
+      setLoading(false);
+    }
+
+    // Manual upcoming items (kept from old system)
+    const manualUp = up || [];
+
+    return (
+      <div>
+        <div className="page-hd">
+          <div className="page-title"><em>Upcoming</em></div>
+          <div style={{display:"flex",gap:8}}>
+            <button className="btn ghost" onClick={loadRecent} style={{fontSize:11}}>
+              {loading ? "Loading..." : "↗ Fetch from Last.fm"}
+            </button>
+            <button className="btn pri" onClick={()=>setModal("add-up")}>+ Manual</button>
+          </div>
+        </div>
+
+        {/* Manual tracked releases */}
+        {manualUp.length > 0 && (
+          <div style={{marginBottom:20}}>
+            <div style={{color:"var(--mut)",fontSize:10,letterSpacing:"1.5px",textTransform:"uppercase",marginBottom:8}}>Manually Tracked</div>
+            {manualUp.map(u=>(
+              <div key={u.id} className="card" style={{marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                <div>
+                  <div style={{fontWeight:600}}>{u.artist}</div>
+                  <div style={{color:"var(--mut)",fontSize:12,fontStyle:"italic"}}>{u.album}</div>
+                  {u.date&&<div style={{fontSize:10,color:"var(--acc)",marginTop:2}}>{u.date}</div>}
+                </div>
+                <button className="btn ghost" style={{fontSize:10,padding:"2px 8px"}}
+                  onClick={()=>requireAuth(()=>setUp(prev=>prev.filter(x=>x.id!==u.id)))}>✕</button>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Last.fm recent releases */}
+        {!releases && !loading && (
+          <div className="card" style={{textAlign:"center",padding:32}}>
+            <div style={{fontFamily:"var(--serif)",fontSize:17,color:"var(--acc)",marginBottom:10}}>What's New from Your Artists</div>
+            <div style={{color:"var(--mut)",fontSize:12,marginBottom:16,lineHeight:1.6}}>
+              Fetch recent and missing releases from artists in your collection via Last.fm.
+            </div>
+            <button className="btn pri" onClick={loadRecent}>Fetch Recent Releases</button>
+            {error&&<div style={{color:"var(--red)",fontSize:11,marginTop:10}}>{error}</div>}
+          </div>
+        )}
+
+        {loading && (
+          <div className="card" style={{textAlign:"center",padding:32}}>
+            <div style={{color:"var(--acc)",fontFamily:"var(--serif)",fontSize:17,marginBottom:8}}>Checking Last.fm…</div>
+            <div style={{color:"var(--mut)",fontSize:12}}>Scanning {[...new Set(col.map(r=>r.artist).filter(Boolean))].length} artists in your collection.</div>
+          </div>
+        )}
+
+        {releases && releases.length === 0 && (
+          <div className="card" style={{textAlign:"center",padding:24}}>
+            <div style={{color:"var(--mut)",fontSize:12}}>No recent releases found — your collection is up to date!</div>
+          </div>
+        )}
+
+        {releases && releases.length > 0 && (
+          <div>
+            <div style={{color:"var(--mut)",fontSize:11,marginBottom:12}}>
+              {releases.length} releases from your artists not yet in your collection
+            </div>
+            {releases.map((r,i)=>{
+              const isWished = wish.some(w=>w.artist===r.artist&&w.album===r.album);
+              return (
+                <div key={i} className="card" style={{marginBottom:8,display:"flex",justifyContent:"space-between",alignItems:"center",gap:12}}>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontWeight:600,fontSize:13}}>{r.artist}</div>
+                    <div style={{color:"var(--mut)",fontSize:12,fontStyle:"italic",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{r.album}</div>
+                    <div style={{display:"flex",gap:8,marginTop:2}}>
+                      {r.year&&<span style={{fontSize:10,color:"var(--acc)"}}>{r.year}</span>}
+                      {r.isNew&&<span style={{fontSize:9,color:"var(--acc2)",background:"rgba(200,169,110,0.15)",padding:"1px 5px",borderRadius:3}}>new</span>}
+                    </div>
+                  </div>
+                  <div style={{display:"flex",gap:6,flexShrink:0}}>
+                    <button className="btn ghost" style={{fontSize:10,padding:"4px 8px"}}
+                      onClick={()=>requireAuth(()=>{
+                        if(col.some(c=>c.artist===r.artist&&c.album===r.album)){showToast("Already owned");return;}
+                        setCol(prev=>[...prev,{id:Date.now(),artist:r.artist,album:r.album,year:r.year,label:"",genre:"",format:"LP",pressingType:"",pressing:"",notes:"",added:new Date().toISOString()}]);
+                        showToast("Added to collection");
+                      })}>+col</button>
+                    <button className={`btn ghost`} style={{fontSize:10,padding:"4px 8px",color:isWished?"var(--acc)":""}}
+                      onClick={()=>requireAuth(()=>{
+                        if(isWished){showToast("Already on watchlist");return;}
+                        setWish(prev=>[...prev,{id:Date.now(),artist:r.artist,album:r.album,notes:"",alertUnder:null,priority:"medium",added:new Date().toISOString()}]);
+                        showToast("Added to watchlist");
+                      })}>{isWished?"✓ watching":"+watch"}</button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  function DiscoverTab() {
+    const [recs, setRecs] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [expanded, setExpanded] = useState({});
+
+    async function loadDiscover() {
+      setLoading(true);
+      setError(null);
+      setRecs(null);
+      try {
+        // Get unique artists from collection
+        const ownedArtists = [...new Set(col.map(r=>r.artist).filter(Boolean))];
+        if(!ownedArtists.length) {
+          setError("Add some records to your collection first.");
+          setLoading(false);
+          return;
+        }
+
+        // Sample up to 15 artists to avoid too many API calls
+        const sample = ownedArtists.sort(()=>Math.random()-0.5).slice(0,15);
+
+        // Fetch similar artists for each
+        const similarCounts = {};
+        await Promise.all(sample.map(async artist => {
+          try {
+            const url = `https://ws.audioscrobbler.com/2.0/?method=artist.getSimilar&artist=${encodeURIComponent(artist)}&api_key=${LASTFM_KEY}&format=json&limit=10`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const similar = (data.similarartists && data.similarartists.artist) || [];
+            similar.forEach(a => {
+              const name = a.name;
+              if(!ownedArtists.some(o=>o.toLowerCase()===name.toLowerCase())) {
+                similarCounts[name] = (similarCounts[name]||0) + 1;
+              }
+            });
+          } catch(e) {}
+        }));
+
+        // Sort by frequency, take top 12
+        const topSimilar = Object.entries(similarCounts)
+          .sort((a,b)=>b[1]-a[1])
+          .slice(0,12)
+          .map(([name]) => name);
+
+        if(!topSimilar.length) {
+          setError("Couldn't find recommendations. Try adding more records.");
+          setLoading(false);
+          return;
+        }
+
+        // Fetch top albums for each recommended artist
+        const results = await Promise.all(topSimilar.map(async artist => {
+          try {
+            const url = `https://ws.audioscrobbler.com/2.0/?method=artist.getTopAlbums&artist=${encodeURIComponent(artist)}&api_key=${LASTFM_KEY}&format=json&limit=8`;
+            const res = await fetch(url);
+            const data = await res.json();
+            const albums = ((data.topalbums && data.topalbums.album) || [])
+              .map(a=>a.name)
+              .filter(a=>a&&a!=="(null)");
+            return {artist, albums};
+          } catch(e) {
+            return {artist, albums:[]};
+          }
+        }));
+
+        setRecs(results.filter(r=>r.albums.length>0));
+      } catch(e) {
+        setError("Error fetching recommendations: " + e.message);
+      }
+      setLoading(false);
+    }
+
+    if(!recs && !loading) return (
+      <div>
+        <div className="page-hd">
+          <div className="page-title"><em>Discover</em></div>
+        </div>
+        <div className="card" style={{textAlign:"center",padding:32}}>
+          <div style={{fontFamily:"var(--serif)",fontSize:18,color:"var(--acc)",marginBottom:12}}>Find New Music</div>
+          <div style={{color:"var(--mut)",fontSize:12,marginBottom:20,lineHeight:1.6}}>
+            Based on your collection, Last.fm will suggest artists and albums you might love.
+          </div>
+          <button className="btn pri" onClick={loadDiscover}>
+            ◎ Generate Recommendations
+          </button>
+          {error && <div style={{color:"var(--red)",fontSize:11,marginTop:12}}>{error}</div>}
+        </div>
+      </div>
+    );
+
+    if(loading) return (
+      <div>
+        <div className="page-hd"><div className="page-title"><em>Discover</em></div></div>
+        <div className="card" style={{textAlign:"center",padding:40}}>
+          <div style={{color:"var(--acc)",fontFamily:"var(--serif)",fontSize:18,marginBottom:12}}>Searching Last.fm…</div>
+          <div style={{color:"var(--mut)",fontSize:12}}>Analyzing your collection and finding similar artists.</div>
+        </div>
+      </div>
+    );
+
+    return (
+      <div>
+        <div className="page-hd">
+          <div className="page-title"><em>Discover</em></div>
+          <button className="btn ghost" onClick={loadDiscover} style={{fontSize:11}}>Refresh</button>
+        </div>
+        <div style={{color:"var(--mut)",fontSize:11,marginBottom:16}}>
+          {recs.length} artists recommended based on your collection
+        </div>
+        {recs.map(({artist, albums}) => {
+          const isExpanded = expanded[artist];
+          const owned = col.filter(r=>r.artist===artist).map(r=>r.album);
+          return (
+            <div key={artist} className="gap-artist-section">
+              <div className="gap-artist-header">
+                <div className="gap-artist-name">{artist}</div>
+                <button className="btn ghost" style={{fontSize:10,padding:"2px 8px"}}
+                  onClick={()=>setExpanded(e=>({...e,[artist]:!e[artist]}))}>
+                  {isExpanded ? "hide" : "show albums"}
+                </button>
+              </div>
+              {isExpanded && (
+                <div className="gap-albums" style={{marginTop:8}}>
+                  {albums.map(album => {
+                    const isOwned = owned.some(o=>o.toLowerCase().includes(album.toLowerCase().slice(0,10)));
+                    const isWished = wish.some(w=>w.artist===artist&&w.album===album);
+                    return (
+                      <div key={album} className={`gap-album${isOwned?" owned":""}`}
+                        style={isWished&&!isOwned?{borderColor:"var(--acc2)"}:{}}>
+                        <span style={{flex:1}}>{album}</span>
+                        {isOwned ? <span style={{fontSize:9,color:"var(--grn)"}}>owned</span> : (
+                          <span className="gap-album-actions">
+                            <span className="gap-btn gap-btn-col" onMouseDown={e=>{e.stopPropagation();requireAuth(()=>{
+                              if(col.some(r=>r.artist===artist&&r.album===album)){showToast("Already owned");return;}
+                              setCol(prev=>[...prev,{id:Date.now(),artist,album,year:"",label:"",genre:"",format:"LP",pressingType:"",pressing:"",notes:"",added:new Date().toISOString()}]);
+                              showToast("Added to collection");
+                            });}}>+col</span>
+                            <span className="gap-btn gap-btn-wish" onMouseDown={e=>{e.stopPropagation();requireAuth(()=>{
+                              if(wish.some(w=>w.artist===artist&&w.album===album)){showToast("Already on watchlist");return;}
+                              setWish(prev=>[...prev,{id:Date.now(),artist,album,notes:"",alertUnder:null,priority:"medium",added:new Date().toISOString()}]);
+                              showToast("Added to watchlist");
+                            });}}>+watch</span>
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+    function LastfmAlbums({artist, col, wish, setCol, setWish, requireAuth, showToast, ALBUM_META, ALBUM_YEARS}) {
+    const [albums, setAlbums] = useState(null);
+    const [loading, setLoading] = useState(false);
+
+    async function fetchAlbums() {
+      setLoading(true);
+      const results = await lastfmGetAlbums(artist);
+      setAlbums(results);
+      setLoading(false);
+    }
+
+    if(albums === null) return (
+      <div style={{padding:"8px 0"}}>
+        <button className="btn ghost" style={{fontSize:11}} onClick={fetchAlbums}>
+          {loading ? "Loading..." : "↗ Fetch from Last.fm"}
+        </button>
+        <div style={{color:"var(--mut)",fontSize:10,marginTop:4}}>Not in local database — fetch from Last.fm</div>
+      </div>
+    );
+
+    if(!albums.length) return <div style={{color:"var(--mut)",fontSize:11,padding:"8px 0"}}>No albums found on Last.fm.</div>;
+
+    const owned = col.filter(r=>r.artist===artist).map(r=>r.album);
+    return (
+      <div className="gap-albums">
+        {albums.map(album=>{
+          const isOwned = owned.some(o=>o.toLowerCase().includes(album.toLowerCase().slice(0,10)));
+          const isWished = wish.some(w=>w.artist===artist&&w.album===album);
+          return(
+            <div key={album} className={`gap-album${isOwned?" owned":""}`} style={isWished&&!isOwned?{borderColor:"var(--acc2)"}:{}}>
+              <span style={{flex:1}}>{album}</span>
+              {isOwned?<span style={{fontSize:9,color:"var(--grn)"}}>owned</span>:(
+                <span className="gap-album-actions">
+                  <span className="gap-btn gap-btn-col" onMouseDown={e=>{e.stopPropagation();requireAuth(()=>{
+                    if(col.some(r=>r.artist===artist&&r.album===album)){showToast("Already owned");return;}
+                    setCol(prev=>[...prev,{id:Date.now(),artist,album,year:"",label:"",genre:"",format:"LP",pressingType:"",pressing:"",notes:"",added:new Date().toISOString()}]);
+                    showToast("Added to collection");
+                  });}}>+col</span>
+                  <span className="gap-btn gap-btn-wish" onMouseDown={e=>{e.stopPropagation();requireAuth(()=>{
+                    if(wish.some(w=>w.artist===artist&&w.album===album)){showToast("Already on watchlist");return;}
+                    setWish(prev=>[...prev,{id:Date.now(),artist,album,notes:"",alertUnder:null,priority:"medium",added:new Date().toISOString()}]);
+                    showToast("Added to watchlist");
+                  });}}>+watch</span>
+                </span>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+    function GapAnalysis() {
     const allDiscoArtists = Object.keys(DISCOGRAPHIES).sort();
     const artistsInCol = new Set(col.map(r=>r.artist).filter(Boolean));
     return (
@@ -1755,7 +2171,15 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
         {[...new Set([...allDiscoArtists.filter(a=>artistsInCol.has(a)),...browsedArtists])].map(artist=>{
           const allAlbums=DISCOGRAPHIES[artist]||[];
           const owned=col.filter(r=>r.artist===artist).map(r=>r.album);
-          if(!allAlbums.length)return null;
+          if(!allAlbums.length)return(
+            <div key={artist} className="gap-artist-section">
+              <div className="gap-artist-header">
+                <div className="gap-artist-name">{artist}</div>
+                <button className="btn ghost" style={{fontSize:9,padding:"2px 6px"}} onClick={()=>setBrowsedArtists(p=>p.filter(a=>a!==artist))}>x</button>
+              </div>
+              <LastfmAlbums artist={artist} col={col} wish={wish} setCol={setCol} setWish={setWish} requireAuth={requireAuth} showToast={showToast} ALBUM_META={ALBUM_META} ALBUM_YEARS={ALBUM_YEARS}/>
+            </div>
+          );
           const pct=Math.round(owned.length/allAlbums.length*100);
           return(
             <div key={artist} className="gap-artist-section">
@@ -2193,6 +2617,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
     { id:"watchlist",   icon:"◈", label:"Watchlist" },
     { id:"gaps",        icon:"◻", label:"Gap Analysis" },
     { id:"upcoming",    icon:"◷", label:"Upcoming" },
+    { id:"discover",    icon:"◉", label:"Discover" },
     { id:"settings",    icon:"◎", label:"Settings" },
   ];
 
@@ -2333,43 +2758,25 @@ onClick={()=>{}}>Details
           )}
 
           {/* UPCOMING */}
-          {tab==="upcoming" && (
+          {tab==="discover" && (
             <div className="page">
-              <div className="page-hd">
-                <div className="page-title"><em>Upcoming</em> Releases</div>
-                <button className="btn pri" onClick={()=>setModal("add-up")}>+ Track Release</button>
-              </div>
-              {up.length===0
-                ? <div>
-                    <div className="empty">No upcoming releases tracked yet.</div>
-                    <div style={{color:"var(--mut)",fontSize:11,textAlign:"center"}}>Add upcoming releases manually, or check Last.fm for new releases.</div>
-                  </div>
-                : up.map(u=>{
-                    const pts = (u.date||"").split(" ");
-                    const artistOwned = col.some(r=>r.artist.toLowerCase()===u.artist.toLowerCase());
-                    return (
-                      <div className="up-item" key={u.id}>
-                        <div className="up-date">
-                          <div className="up-mo">{pts[0]||""}</div>
-                          <div className="up-day">{pts[1]||"—"}</div>
-                        </div>
-                        <div className="up-info">
-                          <h4>{u.artist}{u.album?` — ${u.album}`:""}</h4>
-                          <p>{u.label?u.label+" · ":""}{u.why||""}</p>
-                          {artistOwned&&<span className="owned-tag">In collection</span>}
-                        </div>
-                        <button className="btn danger" style={{fontSize:9,padding:"3px 7px",marginLeft:"auto",flexShrink:0}} onClick={()=>removeUp(u.id)}>✕</button>
-                      </div>
-                    );
-                  })
-              }
+              <DiscoverTab/>
             </div>
           )}
 
-          {/* SETTINGS */}
+          {tab==="discover" && (
+          <div style={{padding:"0 0 20px"}}>
+            <DiscoverTab/>
+          </div>
+        )}                    {tab==="upcoming" && (
+            <div className="page">
+              <RecentReleasesTab/>
+            </div>
+          )}
+
           {tab==="settings" && (
             <div className="page">
-              <div className="page-hd"><div className="page-title"><em>Settings</em><a href="https://www.last.fm/music/+releases/new" target="_blank" rel="noopener noreferrer" className="btn ghost" style={{fontSize:11,marginLeft:8}}>Last.fm New Releases</a></div></div>
+              <div className="page-hd"><div className="page-title"><em>Settings</em></div></div>
               <SettingsPanel/>
             </div>
           )}
@@ -2422,6 +2829,10 @@ function MobileApp() {
   const [gapQuery, setGapQuery] = useState("");
   const [gapSugs, setGapSugs] = useState([]);
   const [gapArtists, setGapArtists] = useState([]);
+  const [mModal, setMModal] = useState(null);
+  const [mForm, setMForm] = useState({artist:"",album:"",year:"",format:"LP",pressingType:"",notes:""});
+  const [mArtistSugs, setMArtistSugs] = useState([]);
+  const [mAlbumSugs, setMAlbumSugs] = useState([]);
   const mAuthCbRef = useRef(null);
 
   useEffect(() => {
@@ -2467,11 +2878,39 @@ function MobileApp() {
     setGapQuery(""); setGapSugs([]);
   }
 
-  const TABS = [
+  function onMArtistChange(v) {
+    setMForm(x=>({...x,artist:v,album:"",year:""}));
+    if(!v){setMArtistSugs([]);return;}
+    const vl=v.toLowerCase();
+    const s=ALL_ARTISTS.filter(a=>a.toLowerCase().startsWith(vl));
+    const c=ALL_ARTISTS.filter(a=>!a.toLowerCase().startsWith(vl)&&a.toLowerCase().includes(vl));
+    setMArtistSugs([...s,...c].slice(0,8));
+  }
+  function pickMArtist(a) {
+    const albums=[...new Set([...(DISCOGRAPHIES[a]||[]),...col.filter(r=>r.artist===a).map(r=>r.album)])];
+    setMForm(x=>({...x,artist:a,album:"",year:""}));
+    setMArtistSugs([]);
+    setMAlbumSugs(albums.slice(0,20));
+  }
+  function onMAlbumChange(v) {
+    setMForm(x=>({...x,album:v}));
+    if(!mForm.artist)return;
+    const all=[...new Set([...(DISCOGRAPHIES[mForm.artist]||[]),...col.filter(r=>r.artist===mForm.artist).map(r=>r.album)])];
+    setMAlbumSugs(v?all.filter(a=>a.toLowerCase().includes(v.toLowerCase())).slice(0,12):all.slice(0,20));
+  }
+  function pickMAlbum(a) {
+    const meta=ALBUM_META[mForm.artist]?.[a]||{};
+    const yr=ALBUM_YEARS[mForm.artist]?.[a]||"";
+    setMForm(x=>({...x,album:a,year:x.year||meta.year||yr||""}));
+    setMAlbumSugs([]);
+  }
+
+    const TABS = [
     {id:"collection",icon:"◉",label:"Collection"},
     {id:"watchlist", icon:"◈",label:"Watchlist"},
     {id:"gaps",      icon:"◻",label:"Gaps"},
     {id:"upcoming",  icon:"◷",label:"Upcoming"},
+    {id:"discover",  icon:"◉",label:"Discover"},
     {id:"settings",  icon:"◎",label:"Settings"},
   ];
 
@@ -2496,7 +2935,7 @@ function MobileApp() {
           <div>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
               <div style={{color:"var(--mut)",fontSize:11}}>{col.length} records</div>
-              <button className="btn pri" onClick={()=>{}}>+ Add Record</button>
+              <button className="btn pri" onClick={()=>setMModal("add-record")}>+ Add Record</button>
             </div>
             {col.length===0
               ? <div style={{...S.card,color:"var(--mut)",textAlign:"center",fontSize:12}}>No records yet. Use desktop to add records.</div>
@@ -2590,7 +3029,7 @@ function MobileApp() {
           <div>
             <div style={{marginBottom:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div style={{color:"var(--mut)",fontSize:11}}>{up.length} upcoming</div>
-              <a href="https://www.last.fm/music/+releases/new" target="_blank" rel="noopener noreferrer" className="btn ghost" style={{fontSize:11}}>Last.fm</a>
+              <a href="https://www.last.fm/music/+releases" target="_blank" rel="noopener noreferrer" className="btn ghost" style={{fontSize:11}}>Last.fm</a>
             </div>
             {up.length===0&&<div style={{...S.card,color:"var(--mut)",textAlign:"center",fontSize:12}}>No upcoming releases tracked.</div>}
             {up.map(u=>(
@@ -2644,6 +3083,66 @@ function MobileApp() {
       <div style={{position:"fixed",bottom:80,left:"50%",transform:"translateX(-50%)",background:"var(--card)",border:"1px solid var(--acc)",borderRadius:4,color:"var(--acc)",fontSize:11,padding:"8px 14px",opacity:toast.on?1:0,transition:"opacity .25s",pointerEvents:"none",whiteSpace:"nowrap",zIndex:200}}>
         {toast.msg}
       </div>
+
+      {/* Add Record Modal */}
+      {mModal==="add-record" && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,.85)",zIndex:100,display:"flex",alignItems:"flex-end"}}>
+          <div style={{background:"var(--bg2)",borderRadius:"12px 12px 0 0",padding:"20px 16px",width:"100%",maxHeight:"85vh",overflowY:"auto",boxSizing:"border-box"}}>
+            <div style={{fontFamily:"var(--serif)",color:"var(--acc)",fontSize:18,marginBottom:16}}>Add Record</div>
+            <div style={{position:"relative",marginBottom:10}}>
+              <input style={{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,padding:"10px 12px",width:"100%",outline:"none",boxSizing:"border-box"}}
+                placeholder="Artist *" value={mForm.artist}
+                onChange={e=>onMArtistChange(e.target.value)}
+                onBlur={()=>setTimeout(()=>setMArtistSugs([]),200)}
+                autoComplete="off"/>
+              {mArtistSugs.length>0&&(
+                <div style={{position:"absolute",top:"100%",left:0,right:0,background:"var(--card)",border:"1px solid var(--bdr)",borderRadius:3,zIndex:50,maxHeight:180,overflowY:"auto"}}>
+                  {mArtistSugs.map(a=><div key={a} style={{padding:"10px 12px",borderBottom:"1px solid var(--bdr)",fontSize:12,cursor:"pointer"}} onMouseDown={()=>pickMArtist(a)}>{a}</div>)}
+                </div>
+              )}
+            </div>
+            <div style={{position:"relative",marginBottom:10}}>
+              <input style={{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,padding:"10px 12px",width:"100%",outline:"none",boxSizing:"border-box"}}
+                placeholder={mForm.artist?"Album *":"Pick artist first"} value={mForm.album}
+                disabled={!mForm.artist}
+                onChange={e=>onMAlbumChange(e.target.value)}
+                onFocus={()=>{if(mForm.artist){const all=[...new Set([...(DISCOGRAPHIES[mForm.artist]||[]),...col.filter(r=>r.artist===mForm.artist).map(r=>r.album)])];setMAlbumSugs(all.slice(0,20));}}}
+                onBlur={()=>setTimeout(()=>setMAlbumSugs([]),200)}
+                autoComplete="off"/>
+              {mAlbumSugs.length>0&&(
+                <div style={{position:"absolute",top:"100%",left:0,right:0,background:"var(--card)",border:"1px solid var(--bdr)",borderRadius:3,zIndex:50,maxHeight:200,overflowY:"auto"}}>
+                  {mAlbumSugs.map(a=><div key={a} style={{padding:"10px 12px",borderBottom:"1px solid var(--bdr)",fontSize:12,cursor:"pointer"}} onMouseDown={()=>pickMAlbum(a)}>{a}</div>)}
+                </div>
+              )}
+            </div>
+            <input style={{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,padding:"10px 12px",width:"100%",marginBottom:10,outline:"none",boxSizing:"border-box"}}
+              placeholder="Year (auto-fills)" value={mForm.year}
+              onChange={e=>setMForm(x=>({...x,year:e.target.value}))}/>
+            <select style={{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,padding:"10px 12px",width:"100%",marginBottom:10,outline:"none"}}
+              value={mForm.format} onChange={e=>setMForm(x=>({...x,format:e.target.value}))}>
+              {["LP","2xLP","3xLP","EP","12-inch Single","7-inch Single","Box Set","Picture Disc","Colored Vinyl"].map(v=><option key={v}>{v}</option>)}
+            </select>
+            <select style={{background:"var(--input)",border:"1px solid var(--bdr)",borderRadius:3,color:"var(--fg)",fontFamily:"var(--mono)",fontSize:13,padding:"10px 12px",width:"100%",marginBottom:16,outline:"none"}}
+              value={mForm.pressingType} onChange={e=>setMForm(x=>({...x,pressingType:e.target.value}))}>
+              <option value="">Pressing Type</option>
+              {["Original","Original US","Original UK","Original EU","Original JP","Reissue","Reissue US","Reissue UK","180g Reissue","Anniversary Edition","Limited Edition","Promo","Test Pressing"].map(v=><option key={v}>{v}</option>)}
+            </select>
+            <div style={{display:"flex",gap:8}}>
+              <button className="btn ghost" style={{flex:1}} onClick={()=>{setMModal(null);setMForm({artist:"",album:"",year:"",format:"LP",pressingType:"",notes:""});setMArtistSugs([]);setMAlbumSugs([]);}}>Cancel</button>
+              <button className="btn pri" style={{flex:1}} onClick={()=>{
+                if(!mForm.artist.trim()||!mForm.album.trim()){alert("Artist + Album required");return;}
+                mRequireAuth(()=>{
+                  setCol(prev=>[...prev,{id:Date.now(),artist:mForm.artist.trim(),album:mForm.album.trim(),year:mForm.year,format:mForm.format,pressingType:mForm.pressingType,label:"",genre:"",pressing:"",notes:mForm.notes,added:new Date().toISOString()}]);
+                  showToast("Record added");
+                  setMModal(null);
+                  setMForm({artist:"",album:"",year:"",format:"LP",pressingType:"",notes:""});
+                  setMArtistSugs([]);setMAlbumSugs([]);
+                });
+              }}>Add Record</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
