@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html><head><meta charset="UTF-8"><style>
+<html><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0"><style>
 
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
@@ -1812,7 +1813,7 @@ Be conversational, warm, and specific. You love records. Keep responses concise 
     );
   }
   function GapAnalysis() {
-    const allDiscoArtists = Object.keys(window.DISCOGRAPHIES).sort();
+    const allDiscoArtists = Object.keys(window.DISCOGRAPHIES||{}).sort();
     const artistsInCol = new Set(col.map(r=>r.artist).filter(Boolean));
     return (
       <div>
